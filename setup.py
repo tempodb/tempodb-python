@@ -17,7 +17,7 @@ def read(fname):
     
 setup(
     name="python-tempodb",
-    version="0.0.1",
+    version="0.0.2",
     author="TempoDB Inc",
     author_email="dev@tempo-db.com",
     description="A client for the TempoDB API",
