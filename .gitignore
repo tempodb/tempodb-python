@@ -1,0 +1,5 @@
+build/
+dist/
+python_tempodb.egg-info/
+*.pyc
+.DS_Store
