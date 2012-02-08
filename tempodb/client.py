@@ -75,12 +75,12 @@ class Client(object):
     def read_id(self, series_id, start, end, interval=None, function=None):
         series_type = 'id'
         series_val = series_id
-        return self.read(self, series_type, series_val, start, end, interval, function)
+        return self.read(series_type, series_val, start, end, interval, function)
 
     def read_key(self, series_key, start, end, interval=None, function=None):
         series_type = 'key'
         series_val = series_id
-        return self.read(self, series_type, series_val, start, end, interval, function)
+        return self.read(series_type, series_val, start, end, interval, function)
 
     def read(self, series_type, series_val, start, end, interval=None, function=None):
         params = {
