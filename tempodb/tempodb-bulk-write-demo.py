@@ -1,3 +1,7 @@
+"""
+http://tempo-db.com/api/write-series/#bulk-write-multiple-series
+"""
+
 import datetime
 from tempodb import Client
 
