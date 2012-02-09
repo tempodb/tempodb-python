@@ -40,6 +40,9 @@ class DataPoint(object):
     def __init__(self, ts, value):
         self.ts = ts
         self.value = value
+    
+    def __str__(self):
+        return "t: %s, v: %s" % (self.ts, self.value)
 
 
 class Client(object):
@@ -79,7 +82,7 @@ class Client(object):
 
     def read_key(self, series_key, start, end, interval=None, function=None):
         series_type = 'key'
-        series_val = series_id
+        series_val = series_key
         return self.read(series_type, series_val, start, end, interval, function)
 
     def read(self, series_type, series_val, start, end, interval=None, function=None):
@@ -96,12 +99,40 @@ class Client(object):
 
         url = '/series/%s/%s/data/' % (series_type, series_val)
         json = self.request(url, method='GET', params=params)
+        
+        #we got an error
+        if 'error' in json:
+            return json
+
         history = []
         for dp in json:
             ts = parser.parse(dp.get('t', ''))
             value = dp.get('v', None)
             history.append(DataPoint(ts, value))
         return history
+    
+    def write_id(self, series_id, data):
+        series_type = 'id'
+        series_val = series_id
+        return self.write(series_type, series_val, data)
+    
+    def write_key(self, series_key, data):
+        series_type = 'key'
+        series_val = series_key
+        return self.write(series_type, series_val, data)
+
+    def write(self, series_type, series_val, data):
+        url = '/series/%s/%s/data/' % (series_type, series_val)
+        json = self.request(url, method='POST', params=data)
+        
+        return json
+    
+    def write_bulk(self, data):
+        json = self.request('/data/', method='POST', params=data)
+
+        return json
+
+
 
     def request(self, target, method='GET', params={}):
         assert method in ['GET', 'POST'], "Only 'GET' and 'POST' are allowed for method."
@@ -114,7 +145,10 @@ class Client(object):
             response = requests.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret))
 
         if response.status_code == 200:
-            json = simplejson.loads(response.text)
+            if response.text:
+                json = simplejson.loads(response.text)
+            else:
+                json = ''
             #try:
             #    json = simplejson.loads(response.text)
             #except simplejson.decoder.JSONDecodeError, err:

@@ -10,7 +10,7 @@ Copyright (c) 2012 TempoDB Inc. All rights reserved.
 import client
 from client import *
 
-VERSION = (0, 0, 1)
+VERSION = (0, 0, 3)
 
 def get_version():
     version = '%s.%s' % (VERSION[0], VERSION[1])
