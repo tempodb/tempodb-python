@@ -10,13 +10,15 @@ Copyright (c) 2012 TempoDB Inc. All rights reserved.
 import os
 from setuptools import setup
 
+import tempodb
+
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name="python-tempodb",
-    version="0.0.3",
+    version=tempodb.__version__,
     author="TempoDB Inc",
     author_email="dev@tempo-db.com",
     description="A client for the TempoDB API",
