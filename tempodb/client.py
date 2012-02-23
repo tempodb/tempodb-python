@@ -40,9 +40,18 @@ class DataPoint(object):
     def __init__(self, ts, value):
         self.ts = ts
         self.value = value
-    
+
     def __str__(self):
         return "t: %s, v: %s" % (self.ts, self.value)
+
+
+class DataSet(object):
+
+    def __init__(self, series, start, end, data=[]):
+        self.series = series
+        self.start = start
+        self.end = end
+        self.data = data
 
 
 class Client(object):
@@ -74,18 +83,51 @@ class Client(object):
             tags = s.get('tags', [])
             series.append(Series(i, key, attr, tags))
         return series
-    
-    def read_id(self, series_id, start, end, interval=None, function=None):
+
+    def read(self, start, end, interval="", function="", ids=[], keys=[]):
+        params = {
+            'start': start.isoformat(),
+            'end': end.isoformat()
+        }
+
+        if ids:
+            params['id'] = ids
+        if keys:
+            params['key'] = keys
+        if interval:
+            params['interval'] = interval
+        if function:
+            params['function'] = function
+
+        url = '/data/'
+        json = self.request(url, method='GET', params=params)
+
+        datasets = []
+        for j in json:
+            id = j.get('series', {}).get('id', '')
+            key = j.get('series', {}).get('key', '')
+            attributes = j.get('series', {}).get('attributes', {})
+            tags = j.get('series', {}).get('tags', [])
+            series = Series(id, key, attributes=attributes, tags=tags)
+
+            start_date = parser.parse(j.get('start', ''))
+            end_date = parser.parse(j.get('end', ''))
+
+            data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in j.get("data", [])]
+            datasets.append(DataSet(series, start_date, end_date, data))
+        return datasets
+
+    def read_id(self, series_id, start, end, interval="", function=""):
         series_type = 'id'
         series_val = series_id
-        return self.read(series_type, series_val, start, end, interval, function)
+        return self._read(series_type, series_val, start, end, interval, function)
 
-    def read_key(self, series_key, start, end, interval=None, function=None):
+    def read_key(self, series_key, start, end, interval="", function=""):
         series_type = 'key'
         series_val = series_key
-        return self.read(series_type, series_val, start, end, interval, function)
+        return self._read(series_type, series_val, start, end, interval, function)
 
-    def read(self, series_type, series_val, start, end, interval=None, function=None):
+    def _read(self, series_type, series_val, start, end, interval="", function=""):
         params = {
             'start': start.isoformat(),
             'end': end.isoformat(),
@@ -99,7 +141,7 @@ class Client(object):
 
         url = '/series/%s/%s/data/' % (series_type, series_val)
         json = self.request(url, method='GET', params=params)
-        
+
         #we got an error
         if 'error' in json:
             return json
@@ -110,12 +152,12 @@ class Client(object):
             value = dp.get('v', None)
             history.append(DataPoint(ts, value))
         return history
-    
+
     def write_id(self, series_id, data):
         series_type = 'id'
         series_val = series_id
         return self.write(series_type, series_val, data)
-    
+
     def write_key(self, series_key, data):
         series_type = 'key'
         series_val = series_key
@@ -124,15 +166,13 @@ class Client(object):
     def write(self, series_type, series_val, data):
         url = '/series/%s/%s/data/' % (series_type, series_val)
         json = self.request(url, method='POST', params=data)
-        
+
         return json
-    
+
     def write_bulk(self, data):
         json = self.request('/data/', method='POST', params=data)
 
         return json
-
-
 
     def request(self, target, method='GET', params={}):
         assert method in ['GET', 'POST'], "Only 'GET' and 'POST' are allowed for method."
@@ -176,7 +216,7 @@ class Client(object):
         for key, value in params.iteritems():
             if isinstance(value, (list, tuple)):
                 for v in value:
-                    p.append((key + '[]', v))
+                    p.append((key, v))
             else:
                 p.append((key, value))
         return urllib.urlencode(p)
