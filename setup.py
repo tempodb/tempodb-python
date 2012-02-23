@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -17,7 +16,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name="python-tempodb",
+    name="tempodb",
     version=tempodb.__version__,
     author="TempoDB Inc",
     author_email="dev@tempo-db.com",
