@@ -22,9 +22,6 @@ init = os.path.join(os.path.dirname(__file__), 'tempodb', '__init__.py')
 version_line = filter(lambda l: l.startswith('VERSION'), open(init))[0]
 VERSION = get_version(eval(version_line.split('=')[-1]))
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 setup(
     name="tempodb",
     version=VERSION,
@@ -32,7 +29,7 @@ setup(
     author_email="dev@tempo-db.com",
     description="A client for the TempoDB API",
     packages=["tempodb"],
-    long_description=read('README.markdown'),
+    long_description="A client for the TempoDB API.",
     install_requires=[
         'python-dateutil==1.5',
         'requests',
