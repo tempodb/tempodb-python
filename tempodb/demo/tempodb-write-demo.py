@@ -4,7 +4,7 @@ http://tempo-db.com/api/write-series/#write-series-by-key
 
 import datetime
 import random
-from tempodb.client import Client
+from tempodb import Client
 
 client = Client('your-api-key', 'your-api-secret')
 

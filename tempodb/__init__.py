@@ -7,6 +7,9 @@ tempodb/setup.py
 Copyright (c) 2012 TempoDB Inc. All rights reserved.
 """
 
+import client
+from client import *
+
 VERSION = (0, 0, 6)
 
 

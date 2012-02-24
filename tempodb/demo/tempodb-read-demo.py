@@ -3,7 +3,7 @@ http://tempo-db.com/api/read-series/#read-series-by-key
 """
 
 import datetime
-from tempodb.client import Client
+from tempodb import Client
 
 client = Client('your-api-key', 'your-api-secret')
 

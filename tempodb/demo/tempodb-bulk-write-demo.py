@@ -3,7 +3,7 @@ http://tempo-db.com/api/write-series/#bulk-write-multiple-series
 """
 
 import datetime
-from tempodb.client import Client
+from tempodb import Client
 
 client = Client('your-api-key', 'your-api-secret')
 
