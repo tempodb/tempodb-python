@@ -84,6 +84,14 @@ class Client(object):
             series.append(Series(i, key, attr, tags))
         return series
 
+    def update_series(self, series):
+        json = self.request('/series/id/%s/' % (series.id,), method='PUT', params=series.__dict__)
+        i = json.get('id', '')
+        key = json.get('key', '')
+        attr = json.get('attributes', {})
+        tags = json.get('tags', [])
+        return Series(i, key, attr, tags)
+
     def read(self, start, end, interval="", function="", ids=[], keys=[]):
         params = {
             'start': start.isoformat(),
@@ -166,23 +174,24 @@ class Client(object):
     def write(self, series_type, series_val, data):
         url = '/series/%s/%s/data/' % (series_type, series_val)
         json = self.request(url, method='POST', params=data)
-
         return json
 
     def write_bulk(self, data):
         json = self.request('/data/', method='POST', params=data)
-
         return json
 
     def request(self, target, method='GET', params={}):
-        assert method in ['GET', 'POST'], "Only 'GET' and 'POST' are allowed for method."
+        assert method in ['GET', 'POST', 'PUT'], "Only 'GET' and 'POST' are allowed for method."
 
-        if method == 'GET':
-            base = self.build_full_url(target, params)
-            response = requests.get(base, auth=(self.key, self.secret))
-        else:
+        if method == 'POST':
             base = self.build_full_url(target)
             response = requests.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret))
+        elif method == 'PUT':
+            base = self.build_full_url(target)
+            response = requests.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret))
+        else:
+            base = self.build_full_url(target, params)
+            response = requests.get(base, auth=(self.key, self.secret))
 
         if response.status_code == 200:
             if response.text:

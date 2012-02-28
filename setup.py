@@ -9,6 +9,7 @@ Copyright (c) 2012 TempoDB Inc. All rights reserved.
 import os
 from setuptools import setup
 
+
 def get_version(version_tuple):
     version = '%s.%s' % (version_tuple[0], version_tuple[1])
     if version_tuple[2]:
