@@ -102,7 +102,7 @@ class Client(object):
         tags = json.get('tags', [])
         return Series(i, key, attr, tags)
 
-    def read(self, start, end, interval="", function="", ids=[], keys=[]):
+    def read(self, start, end, interval="", function="", ids=[], keys=[], tags=[], attributes={}):
         params = {
             'start': start.isoformat(),
             'end': end.isoformat()
@@ -116,6 +116,10 @@ class Client(object):
             params['interval'] = interval
         if function:
             params['function'] = function
+        if tags:
+            params['tag'] = tags
+        if attributes:
+            params['attr'] = attributes
 
         url = '/data/'
         json = self.request(url, method='GET', params=params)
