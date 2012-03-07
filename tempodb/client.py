@@ -53,6 +53,20 @@ class DataSet(object):
         self.end = end
         self.data = data
 
+    @staticmethod
+    def from_json(json):
+        id = json.get('series', {}).get('id', '')
+        key = json.get('series', {}).get('key', '')
+        attributes = json.get('series', {}).get('attributes', {})
+        tags = json.get('series', {}).get('tags', [])
+        series = Series(id, key, attributes=attributes, tags=tags)
+
+        start_date = parser.parse(json.get('start', ''))
+        end_date = parser.parse(json.get('end', ''))
+
+        data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in json.get("data", [])]
+        return DataSet(series, start_date, end_date, data)
+
 
 class Client(object):
 
@@ -123,21 +137,7 @@ class Client(object):
 
         url = '/data/'
         json = self.request(url, method='GET', params=params)
-
-        datasets = []
-        for j in json:
-            id = j.get('series', {}).get('id', '')
-            key = j.get('series', {}).get('key', '')
-            attributes = j.get('series', {}).get('attributes', {})
-            tags = j.get('series', {}).get('tags', [])
-            series = Series(id, key, attributes=attributes, tags=tags)
-
-            start_date = parser.parse(j.get('start', ''))
-            end_date = parser.parse(j.get('end', ''))
-
-            data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in j.get("data", [])]
-            datasets.append(DataSet(series, start_date, end_date, data))
-        return datasets
+        return [DataSet.from_json(j) for j in json]
 
     def read_id(self, series_id, start, end, interval="", function=""):
         series_type = 'id'
@@ -167,18 +167,7 @@ class Client(object):
         #we got an error
         if 'error' in json:
             return json
-
-        id = json.get('series', {}).get('id', '')
-        key = json.get('series', {}).get('key', '')
-        attributes = json.get('series', {}).get('attributes', {})
-        tags = json.get('series', {}).get('tags', [])
-        series = Series(id, key, attributes=attributes, tags=tags)
-
-        start_date = parser.parse(json.get('start', ''))
-        end_date = parser.parse(json.get('end', ''))
-
-        data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in json.get("data", [])]
-        return DataSet(series, start_date, end_date, data)
+        return DataSet.from_json(json)
 
     def write_id(self, series_id, data):
         series_type = 'id'
