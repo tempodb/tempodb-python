@@ -73,8 +73,18 @@ class Client(object):
         database = Database(key, secret)
         return database
 
-    def get_series(self):
-        json = self.request('/series/', method='GET')
+    def get_series(self, ids=[], keys=[], tags=[], attributes={}):
+        params = {}
+        if ids:
+            params['id'] = ids
+        if keys:
+            params['key'] = keys
+        if tags:
+            params['tag'] = tags
+        if attributes:
+            params['attr'] = attributes
+
+        json = self.request('/series/', method='GET', params=params)
         series = []
         for s in json:
             i = s.get('id', '')
@@ -226,9 +236,12 @@ class Client(object):
             if isinstance(value, (list, tuple)):
                 for v in value:
                     p.append((key, v))
+            elif isinstance(value, dict):
+                for k, v in value.items():
+                    p.append(('%s[%s]' % (key, k), v))
             else:
                 p.append((key, value))
-        return urllib.urlencode(p)
+        return urllib.urlencode(p).encode("UTF-8")
 
 
 class TempoDBApiException(Exception):
