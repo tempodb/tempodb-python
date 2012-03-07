@@ -168,12 +168,17 @@ class Client(object):
         if 'error' in json:
             return json
 
-        history = []
-        for dp in json:
-            ts = parser.parse(dp.get('t', ''))
-            value = dp.get('v', None)
-            history.append(DataPoint(ts, value))
-        return history
+        id = json.get('series', {}).get('id', '')
+        key = json.get('series', {}).get('key', '')
+        attributes = json.get('series', {}).get('attributes', {})
+        tags = json.get('series', {}).get('tags', [])
+        series = Series(id, key, attributes=attributes, tags=tags)
+
+        start_date = parser.parse(json.get('start', ''))
+        end_date = parser.parse(json.get('end', ''))
+
+        data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in json.get("data", [])]
+        return DataSet(series, start_date, end_date, data)
 
     def write_id(self, series_id, data):
         series_type = 'id'
