@@ -47,11 +47,12 @@ class DataPoint(object):
 
 class DataSet(object):
 
-    def __init__(self, series, start, end, data=[]):
+    def __init__(self, series, start, end, data=[], summary=None):
         self.series = series
         self.start = start
         self.end = end
         self.data = data
+        self.summary = summary
 
     @staticmethod
     def from_json(json):
@@ -65,7 +66,17 @@ class DataSet(object):
         end_date = parser.parse(json.get('end', ''))
 
         data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in json.get("data", [])]
-        return DataSet(series, start_date, end_date, data)
+        summary = Summary.from_json(json.get('summary', {})) if 'summary' in json else None
+        return DataSet(series, start_date, end_date, data, summary)
+
+
+class Summary(object):
+
+    @staticmethod
+    def from_json(json):
+        summary = Summary()
+        summary.__dict__.update(json)
+        return summary
 
 
 class Client(object):
