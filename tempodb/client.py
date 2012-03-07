@@ -28,11 +28,25 @@ class Database(object):
 
 class Series(object):
 
-    def __init__(self, i, key, attributes={}, tags=[]):
+    def __init__(self, i, key, name="", attributes={}, tags=[]):
         self.id = i
         self.key = key
+        self.name = name
         self.attributes = attributes
         self.tags = tags
+
+    def to_json(self):
+        return self.__dict__
+
+    @staticmethod
+    def from_json(json):
+        i = json.get('id', '')
+        key = json.get('key', '')
+        attributes = json.get('attributes', {})
+        tags = json.get('tags', [])
+        name = json.get('name', '')
+        series = Series(i, key, name=name, attributes=attributes, tags=tags)
+        return series
 
 
 class DataPoint(object):
@@ -43,6 +57,20 @@ class DataPoint(object):
 
     def __str__(self):
         return "t: %s, v: %s" % (self.ts, self.value)
+
+    def to_json(self):
+        json = {
+            't': self.ts.isoformat(),
+            'v': self.value,
+        }
+        return json
+
+    @staticmethod
+    def from_json(json):
+        ts = parser.parse(json.get('t', ''))
+        value = json.get('v', None)
+        dp = DataPoint(ts, value)
+        return dp
 
 
 class DataSet(object):
@@ -56,16 +84,12 @@ class DataSet(object):
 
     @staticmethod
     def from_json(json):
-        id = json.get('series', {}).get('id', '')
-        key = json.get('series', {}).get('key', '')
-        attributes = json.get('series', {}).get('attributes', {})
-        tags = json.get('series', {}).get('tags', [])
-        series = Series(id, key, attributes=attributes, tags=tags)
+        series = Series.from_json(json.get('series', {}))
 
         start_date = parser.parse(json.get('start', ''))
         end_date = parser.parse(json.get('end', ''))
 
-        data = [DataPoint(parser.parse(dp.get('t', '')), dp.get('v', None)) for dp in json.get("data", [])]
+        data = [DataPoint.from_json(dp) for dp in json.get("data", [])]
         summary = Summary.from_json(json.get('summary', {})) if 'summary' in json else None
         return DataSet(series, start_date, end_date, data, summary)
 
@@ -110,22 +134,13 @@ class Client(object):
             params['attr'] = attributes
 
         json = self.request('/series/', method='GET', params=params)
-        series = []
-        for s in json:
-            i = s.get('id', '')
-            key = s.get('key', '')
-            attr = s.get('attributes', {})
-            tags = s.get('tags', [])
-            series.append(Series(i, key, attr, tags))
+        series = [Series.from_json(s) for s in json]
         return series
 
     def update_series(self, series):
-        json = self.request('/series/id/%s/' % (series.id,), method='PUT', params=series.__dict__)
-        i = json.get('id', '')
-        key = json.get('key', '')
-        attr = json.get('attributes', {})
-        tags = json.get('tags', [])
-        return Series(i, key, attr, tags)
+        json = self.request('/series/id/%s/' % (series.id,), method='PUT', params=series.to_json())
+        series = Series.from_json(json)
+        return series
 
     def read(self, start, end, interval="", function="", ids=[], keys=[], tags=[], attributes={}):
         params = {
@@ -192,7 +207,8 @@ class Client(object):
 
     def write(self, series_type, series_val, data):
         url = '/series/%s/%s/data/' % (series_type, series_val)
-        json = self.request(url, method='POST', params=data)
+        body = [dp.to_json() for dp in data]
+        json = self.request(url, method='POST', params=body)
         return json
 
     def write_bulk(self, data):
