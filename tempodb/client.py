@@ -15,7 +15,7 @@ import urllib2
 
 
 API_HOST = 'api.tempo-db.com'
-API_PORT = 80
+API_PORT = 443
 API_VERSION = 'v1'
 
 
