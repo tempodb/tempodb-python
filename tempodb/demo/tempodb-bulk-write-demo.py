@@ -7,7 +7,7 @@ from tempodb import Client
 
 client = Client('your-api-key', 'your-api-secret')
 
-data = {
+bulk = {
     't': datetime.datetime.now().isoformat(),
     'data': [
         { 'key': 'custom-series-key1', 'v': 1.11 },
@@ -17,4 +17,4 @@ data = {
     ],
 }
 
-print client.write_bulk(data)
+print client.write_bulk(bulk)
