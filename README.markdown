@@ -103,7 +103,7 @@ The following example returns all series with tags "tag1" and "tag2" and attribu
 
 ## read(start, end, *interval=""*, *function=""*, *ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
 
-Gets a list of DataSets for the specified start/end times. The interval parameter you to specify a rollup period. For example,
+Gets a list of DataSets for the specified start/end times. The interval parameter allows you to specify a rollup period. For example,
 "1hour" will roll the data up on the hour using the provided function. The function parameter specifies the folding function
 to use while rolling the data up. A rollup is selected automatically if no interval or function is given. The auto rollup interval
 is calculated by the total time range (end - start) as follows:
@@ -155,7 +155,7 @@ with the maximum value for each hour.
 
     start = datetime.datetime(2012, 1, 1)
     end = datetime.datetime(2012, 1, 2)
-    keys = "my-custom-key"
+    keys = ["my-custom-key",]
 
     data = client.read(start, end, keys=keys, interval="1hour", function="max")
 
