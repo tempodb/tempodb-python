@@ -211,8 +211,12 @@ class Client(object):
         json = self.request(url, method='POST', params=body)
         return json
 
-    def write_bulk(self, data):
-        json = self.request('/data/', method='POST', params=data)
+    def write_bulk(self, ts, data):
+        body = {
+            't': ts.isoformat(),
+            'data': data
+        }
+        json = self.request('/data/', method='POST', params=body)
         return json
 
     def request(self, target, method='GET', params={}):

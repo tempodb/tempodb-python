@@ -281,21 +281,19 @@ The following example write three datapoints to the series with key "my-custom-k
     client.write_key("my-custom-key", data)
 
 ## write_bulk(data)
-Writes values to multiple series for a particular timestamp. This function takes one parameter called data, which is a
-dictionary containing the timestamp and a list of dictionaries containing the series id or key and the value. For example:
+Writes values to multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is a
+list of dictionaries containing the series id or key and the value. For example:
 
-    {
-        t:'2012-01-08T00:21:54.000+0000',
-        data: [
-            { id:'01868c1a2aaf416ea6cd8edd65e7a4b8', v:4.164 },
-            { id:'38268c3b231f1266a392931e15e99231', v:73.13 },
-            { key:'your-custom-key', v:55.423 },
-            { key:'foo', v:324.991 },
-        ]
-    }
+    data = [
+        { id:'01868c1a2aaf416ea6cd8edd65e7a4b8', v:4.164 },
+        { id:'38268c3b231f1266a392931e15e99231', v:73.13 },
+        { key:'your-custom-key', v:55.423 },
+        { key:'foo', v:324.991 },
+    ]
 
 ### Parameters
-* data - a dictionary containing a timestamp (string) in ISO8601 and a list of dictionaries containing an id or key and the value
+* ts - the timestamp for the datapoints
+* data - a list of dictionaries containing an id or key and the value
 
 ### Returns
 Nothing
@@ -304,19 +302,18 @@ Nothing
 
 The following example writes datapoints to four separate series at the same timestamp.
 
+    import datetime
     from tempodb import Client
 
     client = Client("api-key", "api-secret")
 
-    bulk = {
-        t:'2012-01-08T001:21:00.000+0000',
-        data: [
-            { id:'01868c1a2aaf416ea6cd8edd65e7a4b8', v:4.164 },
-            { id:'38268c3b231f1266a392931e15e99231', v:73.13 },
-            { key:'your-custom-key', v:55.423 },
-            { key:'foo', v:324.991 },
-        ]
-    }
+    ts = datetime.datetime(2012, 1, 8, 1, 21)
+    data = [
+        { id:'01868c1a2aaf416ea6cd8edd65e7a4b8', v:4.164 },
+        { id:'38268c3b231f1266a392931e15e99231', v:73.13 },
+        { key:'your-custom-key', v:55.423 },
+        { key:'foo', v:324.991 },
+    ]
 
-    client.write_bulk(bulk)
+    client.write_bulk(ts, data)
 
