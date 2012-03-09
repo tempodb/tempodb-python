@@ -10,7 +10,7 @@ Copyright (c) 2012 TempoDB Inc. All rights reserved.
 import client
 from client import *
 
-VERSION = (0, 0, 7)
+VERSION = (0, 0, 8)
 
 
 def get_version():
