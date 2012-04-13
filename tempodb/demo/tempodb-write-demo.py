@@ -4,7 +4,7 @@ http://tempo-db.com/api/write-series/#write-series-by-key
 
 import datetime
 import random
-from tempodb import Client
+from tempodb import Client, DataPoint
 
 client = Client('your-api-key', 'your-api-secret')
 
@@ -17,10 +17,7 @@ for day in range(1, 10):
     data = []
     # 1440 minutes in one day
     for min in range (1, 1441):
-        data.append({
-            't': date.isoformat(),
-            'v': random.random() * 50.0
-        })
+        data.append(DataPoint(date, random.random() * 50.0))
         date = date + datetime.timedelta(minutes=1)
 
     client.write_key('your-custom-key', data)
