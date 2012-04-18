@@ -31,9 +31,12 @@ setup(
     description="A client for the TempoDB API",
     packages=["tempodb"],
     long_description="A client for the TempoDB API.",
+    dependency_links=[
+        'http://github.com/tempodb/requests/tarball/development#egg=requests-0.11.1ssl'
+    ],
     install_requires=[
         'python-dateutil==1.5',
-        'requests',
+        'requests==0.11.1ssl',
         'simplejson',
     ]
 )
