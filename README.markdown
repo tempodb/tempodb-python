@@ -74,6 +74,27 @@ and a statistics summary table. The Summary table contains statistics for the ti
 
 # Client API
 
+## create_series(*key=None*)
+
+Creates and returns a series object, optionally with the given key.
+
+### Parameters
+* key - key for the series (string)
+
+### Returns
+The newly created Series object
+
+### Example
+
+The following example creates two series, one with a given key of "my-custom-key", one with a randomly generated key.
+
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    series1 = client.create_series('my-custom-key')
+    series2 = client.create_series()
+
 ## get_series(*ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
 Gets a list of series objects, optionally filtered by the provided parameters. Series can be filtered by id, key, tag and
 attribute.
