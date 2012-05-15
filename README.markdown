@@ -285,10 +285,10 @@ Writes values to multiple series for a particular timestamp. This function takes
 list of dictionaries containing the series id or key and the value. For example:
 
     data = [
-        { id:'01868c1a2aaf416ea6cd8edd65e7a4b8', v:4.164 },
-        { id:'38268c3b231f1266a392931e15e99231', v:73.13 },
-        { key:'your-custom-key', v:55.423 },
-        { key:'foo', v:324.991 },
+        { 'id':'01868c1a2aaf416ea6cd8edd65e7a4b8', 'v':4.164 },
+        { 'id':'38268c3b231f1266a392931e15e99231', 'v':73.13 },
+        { 'key':'your-custom-key', 'v':55.423 },
+        { 'key':'foo', 'v':324.991 },
     ]
 
 ### Parameters
@@ -309,10 +309,10 @@ The following example writes datapoints to four separate series at the same time
 
     ts = datetime.datetime(2012, 1, 8, 1, 21)
     data = [
-        { id:'01868c1a2aaf416ea6cd8edd65e7a4b8', v:4.164 },
-        { id:'38268c3b231f1266a392931e15e99231', v:73.13 },
-        { key:'your-custom-key', v:55.423 },
-        { key:'foo', v:324.991 },
+        { 'id':'01868c1a2aaf416ea6cd8edd65e7a4b8', 'v':4.164 },
+        { 'id':'38268c3b231f1266a392931e15e99231', 'v':73.13 },
+        { 'key':'your-custom-key', 'v':55.423 },
+        { 'key':'foo', 'v':324.991 },
     ]
 
     client.write_bulk(ts, data)
