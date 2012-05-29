@@ -172,6 +172,8 @@ Supported rollup functions:
 * max
 * min
 * avg or mean
+* stddev (standard deviation)
+* count
 
 You can also retrieve raw data by specifying "raw" as the interval. The series to query can be filtered using the
 remaining parameters.
