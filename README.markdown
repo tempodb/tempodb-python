@@ -101,6 +101,31 @@ The following example returns all series with tags "tag1" and "tag2" and attribu
 
     series_list = client.get_series(tags=tags, attributes=attributes)
 
+## update_series(series)
+Updates a series. The series id is taken from the passed-in series object. Currently, only tags and attributes can be
+modified. The easiest way to use this method is through a read-modify-write cycle.
+### Parameters
+* series - the new series (Series)
+
+### Returns
+The updated Series
+
+### Example
+
+The following example reads the list of series with key *test1* (should only be one) and replaces the tags with *tag3*.
+
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    keys = ["test1"]
+    series_list = client.get_series(keys=keys)
+
+    if series_list:
+        series = series_list[0]
+        series.tags = ["tag3"]
+        client.update_series(series)
+
 ## read(start, end, *interval=""*, *function=""*, *ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
 
 Gets a list of DataSets for the specified start/end times. The interval parameter allows you to specify a rollup period. For example,
