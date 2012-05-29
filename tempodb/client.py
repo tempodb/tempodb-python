@@ -137,6 +137,15 @@ class Client(object):
         series = [Series.from_json(s) for s in json]
         return series
 
+    def create_series(self, key=None):
+        params = {}
+        if key is not None:
+            params['key'] = key
+
+        json = self.request('/series/', method='POST', params=params)
+        series = Series.from_json(json)
+        return series
+
     def update_series(self, series):
         json = self.request('/series/id/%s/' % (series.id,), method='PUT', params=series.to_json())
         series = Series.from_json(json)
