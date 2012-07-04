@@ -184,6 +184,42 @@ class Client(object):
         series_val = series_key
         return self._read(series_type, series_val, start, end, interval, function)
 
+    def write_id(self, series_id, data):
+        series_type = 'id'
+        series_val = series_id
+        return self._write(series_type, series_val, data)
+
+    def write_key(self, series_key, data):
+        series_type = 'key'
+        series_val = series_key
+        return self._write(series_type, series_val, data)
+
+    def write_bulk(self, ts, data):
+        body = {
+            't': ts.isoformat(),
+            'data': data
+        }
+        json = self.request('/data/', method='POST', params=body)
+        return json
+
+    def increment_id(self, series_id, data):
+        series_type = 'id'
+        series_val = series_id
+        return self._increment(series_type, series_val, data)
+
+    def increment_key(self, series_key, data):
+        series_type = 'key'
+        series_val = series_key
+        return self._increment(series_type, series_val, data)
+
+    def increment_bulk(self, ts, data):
+        body = {
+            't': ts.isoformat(),
+            'data': data
+        }
+        json = self.request('/increment/', method='POST', params=body)
+        return json
+
     def _read(self, series_type, series_val, start, end, interval="", function=""):
         params = {
             'start': start.isoformat(),
@@ -204,28 +240,16 @@ class Client(object):
             return json
         return DataSet.from_json(json)
 
-    def write_id(self, series_id, data):
-        series_type = 'id'
-        series_val = series_id
-        return self.write(series_type, series_val, data)
-
-    def write_key(self, series_key, data):
-        series_type = 'key'
-        series_val = series_key
-        return self.write(series_type, series_val, data)
-
-    def write(self, series_type, series_val, data):
+    def _write(self, series_type, series_val, data):
         url = '/series/%s/%s/data/' % (series_type, series_val)
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
 
-    def write_bulk(self, ts, data):
-        body = {
-            't': ts.isoformat(),
-            'data': data
-        }
-        json = self.request('/data/', method='POST', params=body)
+    def _increment(self, series_type, series_val, data):
+        url = '/series/%s/%s/increment/' % (series_type, series_val)
+        body = [dp.to_json() for dp in data]
+        json = self.request(url, method='POST', params=body)
         return json
 
     def request(self, target, method='GET', params={}):
