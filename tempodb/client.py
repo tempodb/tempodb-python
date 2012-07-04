@@ -14,6 +14,8 @@ import simplejson
 import urllib
 import urllib2
 
+import tempodb
+
 
 API_HOST = 'api.tempo-db.com'
 API_PORT = 443
@@ -268,15 +270,21 @@ class Client(object):
     def request(self, target, method='GET', params={}):
         assert method in ['GET', 'POST', 'PUT'], "Only 'GET' and 'POST' are allowed for method."
 
+        headers = {
+            'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), )
+        }
+
         if method == 'POST':
+            headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
-            response = requests.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret))
+            response = requests.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
         elif method == 'PUT':
+            headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
-            response = requests.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret))
+            response = requests.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
         else:
             base = self.build_full_url(target, params)
-            response = requests.get(base, auth=(self.key, self.secret))
+            response = requests.get(base, auth=(self.key, self.secret), headers=headers)
 
         if response.status_code == 200:
             if response.text:
