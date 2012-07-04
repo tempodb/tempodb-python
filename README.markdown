@@ -271,7 +271,6 @@ returns a minimum datapoint per day.
 
     data = client.read_key("my-custom-key", start, end, interval="1day", function="min")
 
-
 ## write_id(series_id, data)
 
 Writes datapoints to the specified series. The series id and a list of DataPoints are required.
@@ -333,10 +332,10 @@ Writes values to multiple series for a particular timestamp. This function takes
 list of dictionaries containing the series id or key and the value. For example:
 
     data = [
-        { 'id':'01868c1a2aaf416ea6cd8edd65e7a4b8', 'v':4.164 },
-        { 'id':'38268c3b231f1266a392931e15e99231', 'v':73.13 },
-        { 'key':'your-custom-key', 'v':55.423 },
-        { 'key':'foo', 'v':324.991 },
+        { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+        { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+        { 'key': 'your-custom-key', 'v': 55.423 },
+        { 'key': 'foo', 'v': 324.991 },
     ]
 
 ### Parameters
@@ -357,11 +356,104 @@ The following example writes datapoints to four separate series at the same time
 
     ts = datetime.datetime(2012, 1, 8, 1, 21)
     data = [
-        { 'id':'01868c1a2aaf416ea6cd8edd65e7a4b8', 'v':4.164 },
-        { 'id':'38268c3b231f1266a392931e15e99231', 'v':73.13 },
-        { 'key':'your-custom-key', 'v':55.423 },
-        { 'key':'foo', 'v':324.991 },
+        { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+        { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+        { 'key': 'your-custom-key', 'v': 55.423 },
+        { 'key': 'foo', 'v': 324.991 },
     ]
 
     client.write_bulk(ts, data)
 
+## increment_id(series_id, data)
+Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However the value is incremented by the datapoint value
+instead of overwritten. Values are incremented atomically, so this is useful for counting events. The series id and a list of DataPoints are required.
+
+### Parameters
+* series_id - id for the series to increment (string)
+* data - the data to write (list of DataPoints)
+
+### Returns
+Nothing
+
+### Example
+
+The following example increments three datapoints of the series with id "38268c3b231f1266a392931e15e99231".
+
+    from datetime import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    data = [
+        DataPoint(datetime(2012, 1, 1, 1, 0, 0), 1),
+        DataPoint(datetime(2012, 1, 1, 1, 1, 0), 2),
+        DataPoint(datetime(2012, 1, 1, 1, 2, 0), 1),
+    ]
+
+    client.increment_id("38268c3b231f1266a392931e15e99231", data)
+
+## increment_key(series_key, data)
+Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However, the value is incremented by the datapoint value
+instead of overwritten. Values are incremented atomically, so this is useful for counting events. The series key and an array of DataPoints are required. Note: a series will be created
+if the provided key does not exist.
+
+### Parameters
+* series_key - key for the series to increment (string)
+* data - the data to write (list of DataPoints)
+
+### Returns
+Nothing
+
+### Example
+
+The following example increments three datapoints of the series with key "my-custom-key".
+
+    from datetime import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    data = [
+        DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
+        DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
+        DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
+    ]
+
+    client.increment_key("my-custom-key", data)
+
+## increment_bulk(data)
+Increments values to multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is a
+list of dictionaries containing the series id or key and the value. For example:
+
+    data = [
+        { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
+        { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
+        { 'key': 'your-custom-key', 'v': 1 },
+        { 'key': 'foo', 'v': 1 },
+    ]
+
+### Parameters
+* ts - the timestamp for the datapoints
+* data - a list of dictionaries containing an id or key and the value
+
+### Returns
+Nothing
+
+### Example
+
+The following example increments datapoints of four separate series at the same timestamp.
+
+    import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    ts = datetime.datetime(2012, 1, 8, 1, 21)
+    data = [
+        { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
+        { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
+        { 'key': 'your-custom-key', 'v': 1 },
+        { 'key': 'foo', 'v': 1 },
+    ]
+
+    client.increment_bulk(ts, data)
