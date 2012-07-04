@@ -8,6 +8,7 @@ Copyright (c) 2012 TempoDB, Inc. All rights reserved.
 """
 
 from dateutil import parser
+import re
 import requests
 import simplejson
 import urllib
@@ -17,6 +18,9 @@ import urllib2
 API_HOST = 'api.tempo-db.com'
 API_PORT = 443
 API_VERSION = 'v1'
+
+VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_]+$'
+RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
 
 
 class Database(object):
@@ -138,6 +142,9 @@ class Client(object):
         return series
 
     def create_series(self, key=None):
+        if key and not RE_VALID_SERIES_KEY.match(key):
+            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+
         params = {}
         if key is not None:
             params['key'] = key
@@ -190,6 +197,9 @@ class Client(object):
         return self._write(series_type, series_val, data)
 
     def write_key(self, series_key, data):
+        if series_key and not RE_VALID_SERIES_KEY.match(series_key):
+            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+
         series_type = 'key'
         series_val = series_key
         return self._write(series_type, series_val, data)
@@ -208,6 +218,9 @@ class Client(object):
         return self._increment(series_type, series_val, data)
 
     def increment_key(self, series_key, data):
+        if series_key and not RE_VALID_SERIES_KEY.match(series_key):
+            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+
         series_type = 'key'
         series_val = series_key
         return self._increment(series_type, series_val, data)
