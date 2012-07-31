@@ -327,7 +327,7 @@ The following example write three datapoints to the series with key "my-custom-k
 
     client.write_key("my-custom-key", data)
 
-## write_bulk(data)
+## write_bulk(ts, data)
 Writes values to multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is a
 list of dictionaries containing the series id or key and the value. For example:
 
