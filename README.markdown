@@ -421,7 +421,7 @@ The following example increments three datapoints of the series with key "my-cus
 
     client.increment_key("my-custom-key", data)
 
-## increment_bulk(data)
+## increment_bulk(ts, data)
 Increments values to multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is a
 list of dictionaries containing the series id or key and the value. For example:
 
