@@ -160,7 +160,7 @@ class Client(object):
         series = Series.from_json(json)
         return series
 
-    def read(self, start, end, interval="", function="", ids=[], keys=[], tags=[], attributes={}):
+    def read(self, start, end, interval="", function="", ids=[], keys=[], tags=[], attributes={}, tz=""):
         params = {
             'start': start.isoformat(),
             'end': end.isoformat()
@@ -178,20 +178,22 @@ class Client(object):
             params['tag'] = tags
         if attributes:
             params['attr'] = attributes
+        if tz:
+            params['tz'] = tz
 
         url = '/data/'
         json = self.request(url, method='GET', params=params)
         return [DataSet.from_json(j) for j in json]
 
-    def read_id(self, series_id, start, end, interval="", function=""):
+    def read_id(self, series_id, start, end, interval="", function="", tz=""):
         series_type = 'id'
         series_val = series_id
-        return self._read(series_type, series_val, start, end, interval, function)
+        return self._read(series_type, series_val, start, end, interval, function, tz)
 
-    def read_key(self, series_key, start, end, interval="", function=""):
+    def read_key(self, series_key, start, end, interval="", function="", tz=""):
         series_type = 'key'
         series_val = series_key
-        return self._read(series_type, series_val, start, end, interval, function)
+        return self._read(series_type, series_val, start, end, interval, function, tz)
 
     def write_id(self, series_id, data):
         series_type = 'id'
@@ -235,7 +237,7 @@ class Client(object):
         json = self.request('/increment/', method='POST', params=body)
         return json
 
-    def _read(self, series_type, series_val, start, end, interval="", function=""):
+    def _read(self, series_type, series_val, start, end, interval="", function="", tz=""):
         params = {
             'start': start.isoformat(),
             'end': end.isoformat(),
@@ -246,6 +248,8 @@ class Client(object):
             params['interval'] = interval
         if function:
             params['function'] = function
+        if tz:
+            params['tz'] = tz
 
         url = '/series/%s/%s/data/' % (series_type, series_val)
         json = self.request(url, method='GET', params=params)
