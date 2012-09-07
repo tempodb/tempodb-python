@@ -147,7 +147,7 @@ The following example reads the list of series with key *test1* (should only be 
         series.tags = ["tag3"]
         client.update_series(series)
 
-## read(start, end, *interval=""*, *function=""*, *ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
+## read(start, end, *interval=""*, *function=""*, *ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*, *tz=""*)
 
 Gets a list of DataSets for the specified start/end times. The interval parameter allows you to specify a rollup period. For example,
 "1hour" will roll the data up on the hour using the provided function. The function parameter specifies the folding function
@@ -187,6 +187,7 @@ remaining parameters.
 * keys - a list of keys to include (list of strings)
 * tags - a list of tags to filter on. These tags are and'd together (list of strings)
 * attributes - a dictionary of key/value pairs to filter on. These attributes are and'd together. (dictionary)
+* tz - the time zone of the output data points (string)
 
 ### Returns
 A list of DataSets
@@ -208,7 +209,7 @@ with the maximum value for each hour.
     data = client.read(start, end, keys=keys, interval="1hour", function="max")
 
 
-## read_id(series_id, start, end, *interval=""*, *function=""*)
+## read_id(series_id, start, end, *interval=""*, *function=""*, *tz=""*)
 
 Gets a DataSet by series id. The id, start, and end times are required. The same rollup rules apply as for the multi series
 read (above).
@@ -219,6 +220,7 @@ read (above).
 * end - end time for the query (datetime)
 * interval - the rollup interval (string)
 * function - the rollup folding function (string)
+* tz - the time zone of the output data points (string)
 
 ### Returns
 
@@ -240,7 +242,7 @@ returns a minimum datapoint per day.
     data = client.read_id("38268c3b231f1266a392931e15e99231", start, end, interval="1day", function="min")
 
 
-## read_key(series_key, start, end, *interval=""*, *function=""*)
+## read_key(series_key, start, end, *interval=""*, *function=""*, *tz=""*)
 
 Gets a DataSet by series key. The key, start, and end times are required. The same rollup rules apply as for the multi series
 read (above).
@@ -251,6 +253,7 @@ read (above).
 * end - end time for the query (datetime)
 * interval - the rollup interval (string)
 * function - the rollup folding function (string)
+* tz - the time zone of the output data points (string)
 
 ### Returns
 
