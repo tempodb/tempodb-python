@@ -7,7 +7,7 @@ from tempodb import Client
 
 client = Client('your-api-key', 'your-api-secret')
 
-ts = datetime.datetime.now().isoformat()
+ts = datetime.datetime.now()
 data = [
     { 'key': 'custom-series-key1', 'v': 1.11 },
     { 'key': 'custom-series-key2', 'v': 2.22 },

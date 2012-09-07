@@ -12,5 +12,5 @@ end = start + datetime.timedelta(days=1)
 
 data = client.read_key('your-custom-key', start, end)
 
-for datapoint in data:
+for datapoint in data.data:
     print datapoint
