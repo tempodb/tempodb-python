@@ -30,7 +30,7 @@ python tempodb-read-demo.py
 
 # Classes
 
-## Client(key, secret, *hostname="api.tempo-db.com"*, *port=443*, *secure=True*)
+## Client(key, secret, *host="api.tempo-db.com"*, *port=443*, *secure=True*)
 Stores the session information for authenticating and accessing TempoDB. Your api key and secret is required. The Client
 also allows you to specify the hostname, port, and protocol (http or https). This is used if you are on a private cluster.
 The default hostname and port should work for the standard cluster.
@@ -39,7 +39,7 @@ All access to data is made through a client instance.
 ### Members
 * key - api key (string)
 * secret - api secret (string)
-* hostname - hostname for the cluster (string)
+* host - hostname for the cluster (string)
 * port - port for the cluster (int)
 * secure - protocol to use (True=https, False=http)
 
