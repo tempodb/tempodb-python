@@ -3,13 +3,14 @@
 
 import mock
 import requests
+import simplejson
 from unittest2 import TestCase
 
 import tempodb
 from tempodb import Client, Series
 
 
-class MockRequest(object):
+class MockResponse(object):
 
     def __init__(self, status_code, text):
         self.status_code = status_code
@@ -45,7 +46,7 @@ class ClientTest(TestCase):
 
     @mock.patch('requests.get')
     def test_get_series(self, requests_get):
-        requests_get.return_value = MockRequest(200, """[{
+        requests_get.return_value = MockResponse(200, """[{
             "id": "id",
             "key": "key",
             "name": "name",
@@ -64,7 +65,7 @@ class ClientTest(TestCase):
 
     @mock.patch('requests.post')
     def test_create_series(self, requests_post):
-        requests_post.return_value = MockRequest(200, """{
+        requests_post.return_value = MockResponse(200, """{
             "id": "id",
             "key": "my-key.tag1.1",
             "name": "",
@@ -86,3 +87,18 @@ class ClientTest(TestCase):
     def test_create_series_validity_error(self, requests_post):
         with self.assertRaises(ValueError):
             series = self.client.create_series('key.b%^.test')
+
+    @mock.patch('requests.put')
+    def test_update_series(self, requests_put):
+        update = Series("id", "key", "name", {"key1": "value1"}, ["tag1"])
+        requests_put.return_value = MockResponse(200, simplejson.dumps(update.to_json()))
+
+        updated = self.client.update_series(update)
+
+        requests_put.assert_called_once_with(
+            'https://example.com:443/v1/series/id/id/',
+            auth=('key', 'secret'),
+            data=simplejson.dumps(update.to_json()),
+            headers=self.put_headers
+        )
+        self.assertEqual(update, updated)
