@@ -61,3 +61,28 @@ class ClientTest(TestCase):
         )
         expected = [Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1', 'tag2'])]
         self.assertEqual(series, expected)
+
+    @mock.patch('requests.post')
+    def test_create_series(self, requests_post):
+        requests_post.return_value = MockRequest(200, """{
+            "id": "id",
+            "key": "my-key.tag1.1",
+            "name": "",
+            "tags": ["my-key", "tag1"],
+            "attributes": {}
+        }""")
+        series = self.client.create_series("my-key.tag1.1")
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/series/',
+            data="""{"key": "my-key.tag1.1"}""",
+            auth=('key', 'secret'),
+            headers=self.post_headers
+        )
+        expected = Series('id', 'my-key.tag1.1', '', {}, ['my-key', 'tag1'])
+        self.assertEqual(series, expected)
+
+    @mock.patch('requests.post')
+    def test_create_series_validity_error(self, requests_post):
+        with self.assertRaises(ValueError):
+            series = self.client.create_series('key.b%^.test')
