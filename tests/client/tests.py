@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import datetime
 import mock
 import requests
 import simplejson
 from unittest2 import TestCase
 
 import tempodb
-from tempodb import Client, Series
+from tempodb import Client, DataPoint, DataSet, Series, Summary
 
 
 class MockResponse(object):
@@ -90,7 +91,7 @@ class ClientTest(TestCase):
 
     @mock.patch('requests.put')
     def test_update_series(self, requests_put):
-        update = Series("id", "key", "name", {"key1": "value1"}, ["tag1"])
+        update = Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1'])
         requests_put.return_value = MockResponse(200, simplejson.dumps(update.to_json()))
 
         updated = self.client.update_series(update)
@@ -102,3 +103,87 @@ class ClientTest(TestCase):
             headers=self.put_headers
         )
         self.assertEqual(update, updated)
+
+    @mock.patch('requests.get')
+    def test_read_id(self, requests_get):
+        requests_get.return_value = MockResponse(200, """{
+            "series": {
+                "id": "id",
+                "key": "key",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "start": "2012-03-27T00:00:00.000",
+            "end": "2012-03-28T00:00:00.000",
+            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "summary": {}
+        }""")
+
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        dataset = self.client.read_id('id', start, end)
+
+        expected = DataSet(Series('id', 'key'), start, end, [DataPoint(start, 12.34)], Summary())
+        requests_get.assert_called_once_with(
+            'https://example.com:443/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(dataset, expected)
+
+    @mock.patch('requests.get')
+    def test_read_key(self, requests_get):
+        requests_get.return_value = MockResponse(200, """{
+            "series": {
+                "id": "id",
+                "key": "key1",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "start": "2012-03-27T00:00:00.000",
+            "end": "2012-03-28T00:00:00.000",
+            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "summary": {}
+        }""")
+
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        dataset = self.client.read_key('key1', start, end)
+
+        expected = DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())
+        requests_get.assert_called_once_with(
+            'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(dataset, expected)
+
+    @mock.patch('requests.get')
+    def test_read(self, requests_get):
+        requests_get.return_value = MockResponse(200, """[{
+            "series": {
+                "id": "id",
+                "key": "key1",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "start": "2012-03-27T00:00:00.000",
+            "end": "2012-03-28T00:00:00.000",
+            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "summary": {}
+        }]""")
+
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        datasets = self.client.read(start, end, keys=['key1'])
+
+        expected = [DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())]
+        requests_get.assert_called_once_with(
+            'https://example.com:443/v1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00&key=key1',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(datasets, expected)
