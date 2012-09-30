@@ -187,3 +187,99 @@ class ClientTest(TestCase):
             headers=self.get_headers
         )
         self.assertEqual(datasets, expected)
+
+    @mock.patch('requests.post')
+    def test_write_id(self, requests_post):
+        requests_post.return_value = MockResponse(200, "")
+        data = [DataPoint(datetime.datetime(2012, 3, 27), 12.34)]
+        result = self.client.write_id("id1", data)
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/series/id/id1/data/',
+            auth=('key', 'secret'),
+            data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
+            headers=self.post_headers
+        )
+        self.assertEquals(result, '')
+
+    @mock.patch('requests.post')
+    def test_write_key(self, requests_post):
+        requests_post.return_value = MockResponse(200, "")
+        data = [DataPoint(datetime.datetime(2012, 3, 27), 12.34)]
+        result = self.client.write_key("key1", data)
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/series/key/key1/data/',
+            auth=('key', 'secret'),
+            data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
+            headers=self.post_headers
+        )
+        self.assertEquals(result, '')
+
+    @mock.patch('requests.post')
+    def test_increment_id(self, requests_post):
+        requests_post.return_value = MockResponse(200, "")
+        data = [DataPoint(datetime.datetime(2012, 3, 27), 1)]
+        result = self.client.increment_id("id1", data)
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/series/id/id1/increment/',
+            auth=('key', 'secret'),
+            data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
+            headers=self.post_headers
+        )
+        self.assertEquals(result, '')
+
+    @mock.patch('requests.post')
+    def test_increment_key(self, requests_post):
+        requests_post.return_value = MockResponse(200, "")
+        data = [DataPoint(datetime.datetime(2012, 3, 27), 1)]
+        result = self.client.increment_key("key1", data)
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/series/key/key1/increment/',
+            auth=('key', 'secret'),
+            data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
+            headers=self.post_headers
+        )
+        self.assertEquals(result, '')
+
+    @mock.patch('requests.post')
+    def test_write_bulk(self, requests_post):
+        requests_post.return_value = MockResponse(200, "")
+        data = [
+            { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+            { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+            { 'key': 'your-custom-key', 'v': 55.423 },
+            { 'key': 'foo', 'v': 324.991 },
+        ]
+        ts = datetime.datetime(2012, 3, 27)
+        result = self.client.write_bulk(ts, data)
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/data/',
+            auth=('key', 'secret'),
+            data="""{"data": %s, "t": "2012-03-27T00:00:00"}""" % simplejson.dumps(data),
+            headers=self.post_headers
+        )
+        self.assertEqual(result, '')
+
+    @mock.patch('requests.post')
+    def test_increment_bulk(self, requests_post):
+        requests_post.return_value = MockResponse(200, "")
+        data = [
+            { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
+            { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
+            { 'key': 'your-custom-key', 'v': 1 },
+            { 'key': 'foo', 'v': 1 },
+        ]
+        ts = datetime.datetime(2012, 3, 27)
+        result = self.client.increment_bulk(ts, data)
+
+        requests_post.assert_called_once_with(
+            'https://example.com:443/v1/increment/',
+            auth=('key', 'secret'),
+            data="""{"data": %s, "t": "2012-03-27T00:00:00"}""" % simplejson.dumps(data),
+            headers=self.post_headers
+        )
+        self.assertEqual(result, '')
