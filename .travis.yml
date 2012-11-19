@@ -6,3 +6,6 @@ install:
   - pip install . --use-mirrors
 script:
   - make test
+notifications:
+  email:
+    - tech@tempo-db.com
