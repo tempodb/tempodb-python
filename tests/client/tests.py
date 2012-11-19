@@ -188,6 +188,34 @@ class ClientTest(TestCase):
         )
         self.assertEqual(datasets, expected)
 
+    @mock.patch('requests.delete')
+    def test_delete_id(self, requests_delete):
+        requests_delete.return_value = MockResponse(200, "")
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        result = self.client.delete_id("id1", start, end)
+
+        requests_delete.assert_called_once_with(
+            'https://example.com:443/v1/series/id/id1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEquals(result, '')
+
+    @mock.patch('requests.delete')
+    def test_delete_key(self, requests_delete):
+        requests_delete.return_value = MockResponse(200, "")
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        result = self.client.delete_key("key1", start, end)
+
+        requests_delete.assert_called_once_with(
+            'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEquals(result, '')
+
     @mock.patch('requests.post')
     def test_write_id(self, requests_post):
         requests_post.return_value = MockResponse(200, "")

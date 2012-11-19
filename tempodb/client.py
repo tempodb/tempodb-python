@@ -110,6 +110,16 @@ class Client(object):
         series_val = series_key
         return self._read(series_type, series_val, start, end, interval, function, tz)
 
+    def delete_id(self, series_id, start, end, **kwargs):
+        series_type = 'id'
+        series_val = series_id
+        return self._delete(series_type, series_val, start, end, kwargs)
+
+    def delete_key(self, series_key, start, end, **kwargs):
+        series_type = 'key'
+        series_val = series_key
+        return self._delete(series_type, series_val, start, end, kwargs)
+
     def write_id(self, series_id, data):
         series_type = 'id'
         series_val = series_id
@@ -174,6 +184,16 @@ class Client(object):
             return json
         return DataSet.from_json(json)
 
+    def _delete(self, series_type, series_val, start, end, options):
+        params = {
+            'start': start.isoformat(),
+            'end': end.isoformat(),
+        }
+        params.update(options)
+        url = '/series/%s/%s/data/' % (series_type, series_val)
+        json = self.request(url, method='DELETE', params=params)
+        return json
+
     def _write(self, series_type, series_val, data):
         url = '/series/%s/%s/data/' % (series_type, series_val)
         body = [dp.to_json() for dp in data]
@@ -187,7 +207,7 @@ class Client(object):
         return json
 
     def request(self, target, method='GET', params={}):
-        assert method in ['GET', 'POST', 'PUT'], "Only 'GET' and 'POST' are allowed for method."
+        assert method in ['GET', 'POST', 'PUT', 'DELETE'], "Only 'GET', 'POST', 'PUT', 'DELETE' are allowed for method."
 
         headers = {
             'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), )
@@ -201,6 +221,9 @@ class Client(object):
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
             response = requests.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
+        elif method == 'DELETE':
+            base = self.build_full_url(target, params)
+            response = requests.delete(base, auth=(self.key, self.secret), headers=headers)
         else:
             base = self.build_full_url(target, params)
             response = requests.get(base, auth=(self.key, self.secret), headers=headers)
