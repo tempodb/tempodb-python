@@ -110,15 +110,15 @@ class Client(object):
         series_val = series_key
         return self._read(series_type, series_val, start, end, interval, function, tz)
 
-    def delete_id(self, series_id, start, end):
+    def delete_id(self, series_id, start, end, **kwargs):
         series_type = 'id'
         series_val = series_id
-        return self._delete(series_type, series_val, start, end)
+        return self._delete(series_type, series_val, start, end, kwargs)
 
-    def delete_key(self, series_key, start, end):
+    def delete_key(self, series_key, start, end, **kwargs):
         series_type = 'key'
         series_val = series_key
-        return self._delete(series_type, series_val, start, end)
+        return self._delete(series_type, series_val, start, end, kwargs)
 
     def write_id(self, series_id, data):
         series_type = 'id'
@@ -184,11 +184,12 @@ class Client(object):
             return json
         return DataSet.from_json(json)
 
-    def _delete(self, series_type, series_val, start, end):
+    def _delete(self, series_type, series_val, start, end, options):
         params = {
             'start': start.isoformat(),
             'end': end.isoformat(),
         }
+        params.update(options)
         url = '/series/%s/%s/data/' % (series_type, series_val)
         json = self.request(url, method='DELETE', params=params)
         return json
