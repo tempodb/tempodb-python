@@ -462,3 +462,60 @@ The following example increments datapoints of four separate series at the same 
     ]
 
     client.increment_bulk(ts, data)
+
+## delete_id(series_id, start, end)
+
+Deletes a range of data specified  by series id. The id, start, and end times are required. As with the read api, the start datetime
+is inclusive and the end datetime is exclusive. i.e. \[start, end)
+
+### Parameters
+* series_id - id for the series to delete from (string)
+* start - start time for the query (datetime, inclusive)
+* end - end time for the query (datetime, exclusive)
+
+### Returns
+
+Nothing
+
+### Example
+
+The following example deletes data for the series with id "38268c3b231f1266a392931e15e99231" from 2012-01-01 to 2012-02-01.
+
+    import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    start = datetime.datetime(2012, 1, 1)
+    end = datetime.datetime(2012, 2, 1)
+
+    response = client.delete_id("38268c3b231f1266a392931e15e99231", start, end)
+
+
+## delete_key(series_key, start, end)
+
+Deletes a range of data from a series referenced by series key. The key, start, and end times are required. As with the read api, the start datetime
+is inclusive and end datetime is exclusive. i.e. \[start, end)
+
+### Parameters
+* series_key - key for the series to delete from (string)
+* start - start time for the query (datetime)
+* end - end time for the query (datetime)
+
+### Returns
+
+Nothing
+
+### Example
+
+The following example deletes data for the series with key "my-custom-key" from 2012-01-01 to 2012-02-01.
+
+    import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+
+    start = datetime.datetime(2012, 1, 1)
+    end = datetime.datetime(2012, 2, 1)
+
+    response = client.delete_key("my-custom-key", start, end)
