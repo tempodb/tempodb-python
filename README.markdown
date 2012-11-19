@@ -1,5 +1,7 @@
 # TempoDB Python API Client
 
+[![Build Status](https://secure.travis-ci.org/tempodb/tempodb-python.png)](http://travis-ci.org/tempodb/tempodb-python)
+
 The TempoDB Python API Client makes calls to the [TempoDB API](http://tempo-db.com/api/).  The module is available on PyPi as [tempodb](http://pypi.python.org/pypi/tempodb/).
 
 1. Install tempodb
