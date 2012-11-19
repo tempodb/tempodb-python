@@ -22,6 +22,7 @@ class ClientTest(TestCase):
 
     def setUp(self):
         self.client = Client('key', 'secret', 'example.com', 443, True)
+        self.client.session = mock.Mock()
         self.get_headers = {
             'User-Agent': 'tempodb-python/%s' % tempodb.get_version()
         }
@@ -45,9 +46,8 @@ class ClientTest(TestCase):
         self.assertEqual(client.port, 443)
         self.assertEqual(client.secure, True)
 
-    @mock.patch('requests.get')
-    def test_get_series(self, requests_get):
-        requests_get.return_value = MockResponse(200, """[{
+    def test_get_series(self):
+        self.client.session.get.return_value = MockResponse(200, """[{
             "id": "id",
             "key": "key",
             "name": "name",
@@ -56,7 +56,7 @@ class ClientTest(TestCase):
         }]""")
 
         series = self.client.get_series()
-        requests_get.assert_called_once_with(
+        self.client.session.get.assert_called_once_with(
             'https://example.com:443/v1/series/',
             auth=('key', 'secret'),
             headers=self.get_headers
@@ -64,9 +64,8 @@ class ClientTest(TestCase):
         expected = [Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1', 'tag2'])]
         self.assertEqual(series, expected)
 
-    @mock.patch('requests.post')
-    def test_create_series(self, requests_post):
-        requests_post.return_value = MockResponse(200, """{
+    def test_create_series(self):
+        self.client.session.post.return_value = MockResponse(200, """{
             "id": "id",
             "key": "my-key.tag1.1",
             "name": "",
@@ -75,7 +74,7 @@ class ClientTest(TestCase):
         }""")
         series = self.client.create_series("my-key.tag1.1")
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/series/',
             data="""{"key": "my-key.tag1.1"}""",
             auth=('key', 'secret'),
@@ -84,19 +83,17 @@ class ClientTest(TestCase):
         expected = Series('id', 'my-key.tag1.1', '', {}, ['my-key', 'tag1'])
         self.assertEqual(series, expected)
 
-    @mock.patch('requests.post')
-    def test_create_series_validity_error(self, requests_post):
+    def test_create_series_validity_error(self):
         with self.assertRaises(ValueError):
             series = self.client.create_series('key.b%^.test')
 
-    @mock.patch('requests.put')
-    def test_update_series(self, requests_put):
+    def test_update_series(self):
         update = Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1'])
-        requests_put.return_value = MockResponse(200, simplejson.dumps(update.to_json()))
+        self.client.session.put.return_value = MockResponse(200, simplejson.dumps(update.to_json()))
 
         updated = self.client.update_series(update)
 
-        requests_put.assert_called_once_with(
+        self.client.session.put.assert_called_once_with(
             'https://example.com:443/v1/series/id/id/',
             auth=('key', 'secret'),
             data=simplejson.dumps(update.to_json()),
@@ -104,9 +101,8 @@ class ClientTest(TestCase):
         )
         self.assertEqual(update, updated)
 
-    @mock.patch('requests.get')
-    def test_read_id(self, requests_get):
-        requests_get.return_value = MockResponse(200, """{
+    def test_read_id(self):
+        self.client.session.get.return_value = MockResponse(200, """{
             "series": {
                 "id": "id",
                 "key": "key",
@@ -125,16 +121,15 @@ class ClientTest(TestCase):
         dataset = self.client.read_id('id', start, end)
 
         expected = DataSet(Series('id', 'key'), start, end, [DataPoint(start, 12.34)], Summary())
-        requests_get.assert_called_once_with(
+        self.client.session.get.assert_called_once_with(
             'https://example.com:443/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
         self.assertEqual(dataset, expected)
 
-    @mock.patch('requests.get')
-    def test_read_key(self, requests_get):
-        requests_get.return_value = MockResponse(200, """{
+    def test_read_key(self):
+        self.client.session.get.return_value = MockResponse(200, """{
             "series": {
                 "id": "id",
                 "key": "key1",
@@ -153,16 +148,15 @@ class ClientTest(TestCase):
         dataset = self.client.read_key('key1', start, end)
 
         expected = DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())
-        requests_get.assert_called_once_with(
+        self.client.session.get.assert_called_once_with(
             'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
         self.assertEqual(dataset, expected)
 
-    @mock.patch('requests.get')
-    def test_read(self, requests_get):
-        requests_get.return_value = MockResponse(200, """[{
+    def test_read(self):
+        self.client.session.get.return_value = MockResponse(200, """[{
             "series": {
                 "id": "id",
                 "key": "key1",
@@ -181,48 +175,45 @@ class ClientTest(TestCase):
         datasets = self.client.read(start, end, keys=['key1'])
 
         expected = [DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())]
-        requests_get.assert_called_once_with(
+        self.client.session.get.assert_called_once_with(
             'https://example.com:443/v1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00&key=key1',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
         self.assertEqual(datasets, expected)
 
-    @mock.patch('requests.delete')
-    def test_delete_id(self, requests_delete):
-        requests_delete.return_value = MockResponse(200, "")
+    def test_delete_id(self):
+        self.client.session.delete.return_value = MockResponse(200, "")
         start = datetime.datetime(2012, 3, 27)
         end = datetime.datetime(2012, 3, 28)
         result = self.client.delete_id("id1", start, end)
 
-        requests_delete.assert_called_once_with(
+        self.client.session.delete.assert_called_once_with(
             'https://example.com:443/v1/series/id/id1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
         self.assertEquals(result, '')
 
-    @mock.patch('requests.delete')
-    def test_delete_key(self, requests_delete):
-        requests_delete.return_value = MockResponse(200, "")
+    def test_delete_key(self):
+        self.client.session.delete.return_value = MockResponse(200, "")
         start = datetime.datetime(2012, 3, 27)
         end = datetime.datetime(2012, 3, 28)
         result = self.client.delete_key("key1", start, end)
 
-        requests_delete.assert_called_once_with(
+        self.client.session.delete.assert_called_once_with(
             'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
         self.assertEquals(result, '')
 
-    @mock.patch('requests.post')
-    def test_write_id(self, requests_post):
-        requests_post.return_value = MockResponse(200, "")
+    def test_write_id(self):
+        self.client.session.post.return_value = MockResponse(200, "")
         data = [DataPoint(datetime.datetime(2012, 3, 27), 12.34)]
         result = self.client.write_id("id1", data)
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/series/id/id1/data/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
@@ -230,13 +221,12 @@ class ClientTest(TestCase):
         )
         self.assertEquals(result, '')
 
-    @mock.patch('requests.post')
-    def test_write_key(self, requests_post):
-        requests_post.return_value = MockResponse(200, "")
+    def test_write_key(self):
+        self.client.session.post.return_value = MockResponse(200, "")
         data = [DataPoint(datetime.datetime(2012, 3, 27), 12.34)]
         result = self.client.write_key("key1", data)
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/series/key/key1/data/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
@@ -244,13 +234,12 @@ class ClientTest(TestCase):
         )
         self.assertEquals(result, '')
 
-    @mock.patch('requests.post')
-    def test_increment_id(self, requests_post):
-        requests_post.return_value = MockResponse(200, "")
+    def test_increment_id(self):
+        self.client.session.post.return_value = MockResponse(200, "")
         data = [DataPoint(datetime.datetime(2012, 3, 27), 1)]
         result = self.client.increment_id("id1", data)
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/series/id/id1/increment/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
@@ -258,13 +247,12 @@ class ClientTest(TestCase):
         )
         self.assertEquals(result, '')
 
-    @mock.patch('requests.post')
-    def test_increment_key(self, requests_post):
-        requests_post.return_value = MockResponse(200, "")
+    def test_increment_key(self):
+        self.client.session.post.return_value = MockResponse(200, "")
         data = [DataPoint(datetime.datetime(2012, 3, 27), 1)]
         result = self.client.increment_key("key1", data)
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/series/key/key1/increment/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
@@ -272,9 +260,8 @@ class ClientTest(TestCase):
         )
         self.assertEquals(result, '')
 
-    @mock.patch('requests.post')
-    def test_write_bulk(self, requests_post):
-        requests_post.return_value = MockResponse(200, "")
+    def test_write_bulk(self):
+        self.client.session.post.return_value = MockResponse(200, "")
         data = [
             { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
             { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
@@ -284,7 +271,7 @@ class ClientTest(TestCase):
         ts = datetime.datetime(2012, 3, 27)
         result = self.client.write_bulk(ts, data)
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/data/',
             auth=('key', 'secret'),
             data="""{"data": %s, "t": "2012-03-27T00:00:00"}""" % simplejson.dumps(data),
@@ -292,9 +279,8 @@ class ClientTest(TestCase):
         )
         self.assertEqual(result, '')
 
-    @mock.patch('requests.post')
-    def test_increment_bulk(self, requests_post):
-        requests_post.return_value = MockResponse(200, "")
+    def test_increment_bulk(self):
+        self.client.session.post.return_value = MockResponse(200, "")
         data = [
             { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
             { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
@@ -304,7 +290,7 @@ class ClientTest(TestCase):
         ts = datetime.datetime(2012, 3, 27)
         result = self.client.increment_bulk(ts, data)
 
-        requests_post.assert_called_once_with(
+        self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/increment/',
             auth=('key', 'secret'),
             data="""{"data": %s, "t": "2012-03-27T00:00:00"}""" % simplejson.dumps(data),

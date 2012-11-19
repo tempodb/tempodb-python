@@ -32,6 +32,7 @@ class Client(object):
         self.host = host
         self.port = port
         self.secure = secure
+        self.session = requests.session()
 
     def create_database(self, name=""):
         params = {
@@ -210,23 +211,23 @@ class Client(object):
         assert method in ['GET', 'POST', 'PUT', 'DELETE'], "Only 'GET', 'POST', 'PUT', 'DELETE' are allowed for method."
 
         headers = {
-            'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), )
+            'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), ),
         }
 
         if method == 'POST':
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
-            response = requests.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
+            response = self.session.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
         elif method == 'PUT':
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
-            response = requests.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
+            response = self.session.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
         elif method == 'DELETE':
             base = self.build_full_url(target, params)
-            response = requests.delete(base, auth=(self.key, self.secret), headers=headers)
+            response = self.session.delete(base, auth=(self.key, self.secret), headers=headers)
         else:
             base = self.build_full_url(target, params)
-            response = requests.get(base, auth=(self.key, self.secret), headers=headers)
+            response = self.session.get(base, auth=(self.key, self.secret), headers=headers)
 
         if response.status_code == 200:
             if response.text:
