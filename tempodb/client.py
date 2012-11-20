@@ -212,6 +212,7 @@ class Client(object):
 
         headers = {
             'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), ),
+            'Accept-Encoding': 'gzip',
         }
 
         if method == 'POST':

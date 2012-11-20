@@ -23,13 +23,15 @@ class ClientTest(TestCase):
     def setUp(self):
         self.client = Client('key', 'secret', 'example.com', 443, True)
         self.client.session = mock.Mock()
-        self.get_headers = {
-            'User-Agent': 'tempodb-python/%s' % tempodb.get_version()
-        }
-        self.put_headers = {
+        self.headers = {
             'User-Agent': 'tempodb-python/%s' % tempodb.get_version(),
-            'Content-Type': 'application/json',
+            'Accept-Encoding': 'gzip',
         }
+        self.get_headers = self.headers
+        self.delete_headers = self.headers
+        self.put_headers = dict({
+            'Content-Type': 'application/json',
+        }, **self.headers)
         self.post_headers = self.put_headers
 
     def test_init(self):
@@ -191,7 +193,7 @@ class ClientTest(TestCase):
         self.client.session.delete.assert_called_once_with(
             'https://example.com:443/v1/series/id/id1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
-            headers=self.get_headers
+            headers=self.delete_headers
         )
         self.assertEquals(result, '')
 
@@ -204,7 +206,7 @@ class ClientTest(TestCase):
         self.client.session.delete.assert_called_once_with(
             'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
-            headers=self.get_headers
+            headers=self.delete_headers
         )
         self.assertEquals(result, '')
 
