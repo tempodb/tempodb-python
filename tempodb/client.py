@@ -20,7 +20,7 @@ API_HOST = 'api.tempo-db.com'
 API_PORT = 443
 API_VERSION = 'v1'
 
-VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_]+$'
+VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_/\\ ]*$'
 RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
 
 
