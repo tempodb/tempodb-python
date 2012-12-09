@@ -157,6 +157,33 @@ class ClientTest(TestCase):
         )
         self.assertEqual(dataset, expected)
 
+    def test_read_key_escape(self):
+        self.client.session.get.return_value = MockResponse(200, """{
+            "series": {
+                "id": "id",
+                "key": "ke:y/1",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "start": "2012-03-27T00:00:00.000",
+            "end": "2012-03-28T00:00:00.000",
+            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "summary": {}
+        }""")
+
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        dataset = self.client.read_key('ke:y/1', start, end)
+
+        expected = DataSet(Series('id', 'ke:y/1'), start, end, [DataPoint(start, 12.34)], Summary())
+        self.client.session.get.assert_called_once_with(
+            'https://example.com:443/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(dataset, expected)
+
     def test_read(self):
         self.client.session.get.return_value = MockResponse(200, """[{
             "series": {
