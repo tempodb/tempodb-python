@@ -20,7 +20,7 @@ API_HOST = 'api.tempo-db.com'
 API_PORT = 443
 API_VERSION = 'v1'
 
-VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_]+$'
+VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_/\\ ]*$'
 RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
 
 
@@ -177,7 +177,7 @@ class Client(object):
         if tz:
             params['tz'] = tz
 
-        url = '/series/%s/%s/data/' % (series_type, series_val)
+        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
         json = self.request(url, method='GET', params=params)
 
         #we got an error
@@ -191,18 +191,18 @@ class Client(object):
             'end': end.isoformat(),
         }
         params.update(options)
-        url = '/series/%s/%s/data/' % (series_type, series_val)
+        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
         json = self.request(url, method='DELETE', params=params)
         return json
 
     def _write(self, series_type, series_val, data):
-        url = '/series/%s/%s/data/' % (series_type, series_val)
+        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
 
     def _increment(self, series_type, series_val, data):
-        url = '/series/%s/%s/increment/' % (series_type, series_val)
+        url = '/series/%s/%s/increment/' % (series_type, urllib2.quote(series_val, ""))
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
@@ -250,12 +250,10 @@ class Client(object):
         return base_full_url + self.build_url(target, params)
 
     def build_url(self, url, params={}):
-        target_path = urllib2.quote(url)
-
         if params:
-            return "/%s%s?%s" % (API_VERSION, target_path, self._urlencode(params))
+            return "/%s%s?%s" % (API_VERSION, url, self._urlencode(params))
         else:
-            return "/%s%s" % (API_VERSION, target_path)
+            return "/%s%s" % (API_VERSION, url)
 
     def _urlencode(self, params):
         p = []
