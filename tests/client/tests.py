@@ -237,6 +237,19 @@ class ClientTest(TestCase):
         )
         self.assertEquals(result, '')
 
+    def test_delete_key_escape(self):
+        self.client.session.delete.return_value = MockResponse(200, "")
+        start = datetime.datetime(2012, 3, 27)
+        end = datetime.datetime(2012, 3, 28)
+        result = self.client.delete_key("ke:y/1", start, end)
+
+        self.client.session.delete.assert_called_once_with(
+            'https://example.com:443/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.delete_headers
+        )
+        self.assertEquals(result, '')
+
     def test_write_id(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [DataPoint(datetime.datetime(2012, 3, 27), 12.34)]
@@ -263,6 +276,19 @@ class ClientTest(TestCase):
         )
         self.assertEquals(result, '')
 
+    def test_write_key_escape(self):
+        self.client.session.post.return_value = MockResponse(200, "")
+        data = [DataPoint(datetime.datetime(2012, 3, 27), 12.34)]
+        result = self.client.write_key("ke:y/1", data)
+
+        self.client.session.post.assert_called_once_with(
+            'https://example.com:443/v1/series/key/ke%3Ay%2F1/data/',
+            auth=('key', 'secret'),
+            data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
+            headers=self.post_headers
+        )
+        self.assertEquals(result, '')
+
     def test_increment_id(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [DataPoint(datetime.datetime(2012, 3, 27), 1)]
@@ -283,6 +309,19 @@ class ClientTest(TestCase):
 
         self.client.session.post.assert_called_once_with(
             'https://example.com:443/v1/series/key/key1/increment/',
+            auth=('key', 'secret'),
+            data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
+            headers=self.post_headers
+        )
+        self.assertEquals(result, '')
+
+    def test_increment_key_escape(self):
+        self.client.session.post.return_value = MockResponse(200, "")
+        data = [DataPoint(datetime.datetime(2012, 3, 27), 1)]
+        result = self.client.increment_key("ke:y/1", data)
+
+        self.client.session.post.assert_called_once_with(
+            'https://example.com:443/v1/series/key/ke%3Ay%2F1/increment/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
             headers=self.post_headers
