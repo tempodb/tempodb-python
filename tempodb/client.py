@@ -26,13 +26,15 @@ RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
 
 class Client(object):
 
-    def __init__(self, key, secret, host=API_HOST, port=API_PORT, secure=True):
+    def __init__(self, key, secret, host=API_HOST, port=API_PORT, secure=True, pool_connections=10, pool_maxsize=10):
         self.key = key
         self.secret = secret
         self.host = host
         self.port = port
         self.secure = secure
         self.session = requests.session()
+        self.session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
+        self.session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
 
     def create_database(self, name=""):
         params = {
