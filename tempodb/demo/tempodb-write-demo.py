@@ -6,7 +6,12 @@ import datetime
 import random
 from tempodb import Client, DataPoint
 
-client = Client('your-api-key', 'your-api-secret')
+# Modify these with your credentials found at: http://tempo-db.com/manage/
+API_KEY = 'your-api-key'
+API_SECRET = 'your-api-secret'
+SERIES_KEY = 'your-custom-key'
+
+client = Client(API_KEY, API_SECRET)
 
 date = datetime.datetime(2012, 1, 1)
 
@@ -20,4 +25,4 @@ for day in range(1, 10):
         data.append(DataPoint(date, random.random() * 50.0))
         date = date + datetime.timedelta(minutes=1)
 
-    client.write_key('your-custom-key', data)
+    client.write_key(SERIES_KEY, data)
