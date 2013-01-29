@@ -5,7 +5,12 @@ http://tempo-db.com/api/write-series/#bulk-write-multiple-series
 import datetime
 from tempodb import Client
 
-client = Client('your-api-key', 'your-api-secret')
+# Modify these with your credentials found at: http://tempo-db.com/manage/
+API_KEY = 'your-api-key'
+API_SECRET = 'your-api-secret'
+SERIES_KEY = 'your-custom-key'
+
+client = Client(API_KEY, API_SECRET)
 
 ts = datetime.datetime.now()
 data = [
