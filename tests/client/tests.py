@@ -48,6 +48,21 @@ class ClientTest(TestCase):
         self.assertEqual(client.port, 443)
         self.assertEqual(client.secure, True)
 
+    def test_port_defaults(self):
+        """ 80 is the default port for HTTP, 443 is the default for HTTPS """
+        client = Client('key', 'secret', 'example.com', 80, False)
+        self.assertEqual(client.build_full_url('/etc'), 'http://example.com/v1/etc')
+        client = Client('key', 'secret', 'example.com', 88, False)
+        self.assertEqual(client.build_full_url('/etc'), 'http://example.com:88/v1/etc')
+        client = Client('key', 'secret', 'example.com', 443, False)
+        self.assertEqual(client.build_full_url('/etc'), 'http://example.com:443/v1/etc')
+        client = Client('key', 'secret', 'example.com', 443, True)
+        self.assertEqual(client.build_full_url('/etc'), 'https://example.com/v1/etc')
+        client = Client('key', 'secret', 'example.com', 88, True)
+        self.assertEqual(client.build_full_url('/etc'), 'https://example.com:88/v1/etc')
+        client = Client('key', 'secret', 'example.com', 80, True)
+        self.assertEqual(client.build_full_url('/etc'), 'https://example.com:80/v1/etc')
+
     def test_get_series(self):
         self.client.session.get.return_value = MockResponse(200, """[{
             "id": "id",
@@ -59,7 +74,7 @@ class ClientTest(TestCase):
 
         series = self.client.get_series()
         self.client.session.get.assert_called_once_with(
-            'https://example.com:443/v1/series/',
+            'https://example.com/v1/series/',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
@@ -77,7 +92,7 @@ class ClientTest(TestCase):
         series = self.client.create_series("my-key.tag1.1")
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/',
+            'https://example.com/v1/series/',
             data="""{"key": "my-key.tag1.1"}""",
             auth=('key', 'secret'),
             headers=self.post_headers
@@ -96,7 +111,7 @@ class ClientTest(TestCase):
         updated = self.client.update_series(update)
 
         self.client.session.put.assert_called_once_with(
-            'https://example.com:443/v1/series/id/id/',
+            'https://example.com/v1/series/id/id/',
             auth=('key', 'secret'),
             data=simplejson.dumps(update.to_json()),
             headers=self.put_headers
@@ -124,7 +139,7 @@ class ClientTest(TestCase):
 
         expected = DataSet(Series('id', 'key'), start, end, [DataPoint(start, 12.34)], Summary())
         self.client.session.get.assert_called_once_with(
-            'https://example.com:443/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            'https://example.com/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
@@ -151,7 +166,7 @@ class ClientTest(TestCase):
 
         expected = DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())
         self.client.session.get.assert_called_once_with(
-            'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            'https://example.com/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
@@ -178,7 +193,7 @@ class ClientTest(TestCase):
 
         expected = DataSet(Series('id', 'ke:y/1'), start, end, [DataPoint(start, 12.34)], Summary())
         self.client.session.get.assert_called_once_with(
-            'https://example.com:443/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            'https://example.com/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
@@ -205,7 +220,7 @@ class ClientTest(TestCase):
 
         expected = [DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())]
         self.client.session.get.assert_called_once_with(
-            'https://example.com:443/v1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00&key=key1',
+            'https://example.com/v1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00&key=key1',
             auth=('key', 'secret'),
             headers=self.get_headers
         )
@@ -218,7 +233,7 @@ class ClientTest(TestCase):
         result = self.client.delete_id("id1", start, end)
 
         self.client.session.delete.assert_called_once_with(
-            'https://example.com:443/v1/series/id/id1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            'https://example.com/v1/series/id/id1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.delete_headers
         )
@@ -231,7 +246,7 @@ class ClientTest(TestCase):
         result = self.client.delete_key("key1", start, end)
 
         self.client.session.delete.assert_called_once_with(
-            'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            'https://example.com/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.delete_headers
         )
@@ -244,7 +259,7 @@ class ClientTest(TestCase):
         result = self.client.delete_key("ke:y/1", start, end)
 
         self.client.session.delete.assert_called_once_with(
-            'https://example.com:443/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
+            'https://example.com/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
             headers=self.delete_headers
         )
@@ -256,7 +271,7 @@ class ClientTest(TestCase):
         result = self.client.write_id("id1", data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/id/id1/data/',
+            'https://example.com/v1/series/id/id1/data/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
             headers=self.post_headers
@@ -269,7 +284,7 @@ class ClientTest(TestCase):
         result = self.client.write_key("key1", data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/key/key1/data/',
+            'https://example.com/v1/series/key/key1/data/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
             headers=self.post_headers
@@ -282,7 +297,7 @@ class ClientTest(TestCase):
         result = self.client.write_key("ke:y/1", data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/key/ke%3Ay%2F1/data/',
+            'https://example.com/v1/series/key/ke%3Ay%2F1/data/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 12.34}]""",
             headers=self.post_headers
@@ -295,7 +310,7 @@ class ClientTest(TestCase):
         result = self.client.increment_id("id1", data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/id/id1/increment/',
+            'https://example.com/v1/series/id/id1/increment/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
             headers=self.post_headers
@@ -308,7 +323,7 @@ class ClientTest(TestCase):
         result = self.client.increment_key("key1", data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/key/key1/increment/',
+            'https://example.com/v1/series/key/key1/increment/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
             headers=self.post_headers
@@ -321,7 +336,7 @@ class ClientTest(TestCase):
         result = self.client.increment_key("ke:y/1", data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/series/key/ke%3Ay%2F1/increment/',
+            'https://example.com/v1/series/key/ke%3Ay%2F1/increment/',
             auth=('key', 'secret'),
             data="""[{"t": "2012-03-27T00:00:00", "v": 1}]""",
             headers=self.post_headers
@@ -340,7 +355,7 @@ class ClientTest(TestCase):
         result = self.client.write_bulk(ts, data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/data/',
+            'https://example.com/v1/data/',
             auth=('key', 'secret'),
             data="""{"data": %s, "t": "2012-03-27T00:00:00"}""" % simplejson.dumps(data),
             headers=self.post_headers
@@ -359,7 +374,7 @@ class ClientTest(TestCase):
         result = self.client.increment_bulk(ts, data)
 
         self.client.session.post.assert_called_once_with(
-            'https://example.com:443/v1/increment/',
+            'https://example.com/v1/increment/',
             auth=('key', 'secret'),
             data="""{"data": %s, "t": "2012-03-27T00:00:00"}""" % simplejson.dumps(data),
             headers=self.post_headers
