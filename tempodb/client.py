@@ -246,7 +246,8 @@ class Client(object):
         return json
 
     def build_full_url(self, target, params={}):
-        port = "" if self.port == 80 else ":%d" % self.port
+        default_port = {80: not self.secure, 443: self.secure}
+        port = "" if default_port.get(self.port, False) else ":%d" % self.port
         protocol = "https://" if self.secure else "http://"
         base_full_url = "%s%s%s" % (protocol, self.host, port)
         return base_full_url + self.build_url(target, params)
