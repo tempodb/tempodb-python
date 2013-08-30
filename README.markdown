@@ -92,12 +92,14 @@ The newly created Series object
 
 The following example creates two series, one with a given key of "my-custom-key", one with a randomly generated key.
 
-    from tempodb import Client
+```python
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    series1 = client.create_series('my-custom-key')
-    series2 = client.create_series()
+series1 = client.create_series('my-custom-key')
+series2 = client.create_series()
+```
 
 ## get_series(*ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
 Gets a list of series objects, optionally filtered by the provided parameters. Series can be filtered by id, key, tag and
@@ -115,16 +117,18 @@ A list of Series objects
 
 The following example returns all series with tags "tag1" and "tag2" and attribute "attr1" equal to "value1".
 
-    from tempodb import Client
+```python
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    tags = ["tag1", "tag2"]
-    attributes = {
-        "attr1": "value1"
-    }
+tags = ["tag1", "tag2"]
+attributes = {
+    "attr1": "value1"
+}
 
-    series_list = client.get_series(tags=tags, attributes=attributes)
+series_list = client.get_series(tags=tags, attributes=attributes)
+```
 
 ## update_series(series)
 Updates a series. The series id is taken from the passed-in series object. Currently, only tags and attributes can be
@@ -139,17 +143,19 @@ The updated Series
 
 The following example reads the list of series with key *test1* (should only be one) and replaces the tags with *tag3*.
 
-    from tempodb import Client
+```python
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    keys = ["test1"]
-    series_list = client.get_series(keys=keys)
+keys = ["test1"]
+series_list = client.get_series(keys=keys)
 
-    if series_list:
-        series = series_list[0]
-        series.tags = ["tag3"]
-        client.update_series(series)
+if series_list:
+    series = series_list[0]
+    series.tags = ["tag3"]
+    client.update_series(series)
+```
 
 ## read(start, end, *interval=""*, *function=""*, *ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*, *tz=""*)
 
@@ -201,17 +207,18 @@ A list of DataSets
 The following example returns a list of series from 2012-01-01 to 2012-01-02 for the series with key "my-custom-key",
 with the maximum value for each hour.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    start = datetime.datetime(2012, 1, 1)
-    end = datetime.datetime(2012, 1, 2)
-    keys = ["my-custom-key",]
+start = datetime.datetime(2012, 1, 1)
+end = datetime.datetime(2012, 1, 2)
+keys = ["my-custom-key",]
 
-    data = client.read(start, end, keys=keys, interval="1hour", function="max")
-
+data = client.read(start, end, keys=keys, interval="1hour", function="max")
+```
 
 ## read_id(series_id, start, end, *interval=""*, *function=""*, *tz=""*)
 
@@ -235,16 +242,17 @@ A DataSet
 The following example reads data for the series with id "38268c3b231f1266a392931e15e99231" from 2012-01-01 to 2012-02-01 and
 returns a minimum datapoint per day.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    start = datetime.datetime(2012, 1, 1)
-    end = datetime.datetime(2012, 2, 1)
+start = datetime.datetime(2012, 1, 1)
+end = datetime.datetime(2012, 2, 1)
 
-    data = client.read_id("38268c3b231f1266a392931e15e99231", start, end, interval="1day", function="min")
-
+data = client.read_id("38268c3b231f1266a392931e15e99231", start, end, interval="1day", function="min")
+```
 
 ## read_key(series_key, start, end, *interval=""*, *function=""*, *tz=""*)
 
@@ -268,15 +276,17 @@ A DataSet
 The following example reads data for the series with key "my-custom-key" from 2012-01-01 to 2012-02-01 and
 returns a minimum datapoint per day.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    start = datetime.datetime(2012, 1, 1)
-    end = datetime.datetime(2012, 2, 1)
+start = datetime.datetime(2012, 1, 1)
+end = datetime.datetime(2012, 2, 1)
 
-    data = client.read_key("my-custom-key", start, end, interval="1day", function="min")
+data = client.read_key("my-custom-key", start, end, interval="1day", function="min")
+```
 
 ## write_id(series_id, data)
 
@@ -293,18 +303,20 @@ Nothing
 
 The following example write three datapoints to the series with id "38268c3b231f1266a392931e15e99231".
 
-    from datetime import datetime
-    from tempodb import Client
+```python
+from datetime import datetime
+from tempodb import Client, DataPoint
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    data = [
-        DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
-        DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
-        DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
-    ]
+data = [
+    DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
+    DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
+    DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
+]
 
-    client.write_id("38268c3b231f1266a392931e15e99231", data)
+client.write_id("38268c3b231f1266a392931e15e99231", data)
+```
 
 ## write_key(series_key, data)
 Writes datapoints to the specified series. The series key and a list of DataPoints are required. Note: a series will be created
@@ -321,18 +333,20 @@ Nothing
 
 The following example write three datapoints to the series with key "my-custom-key".
 
-    from datetime import datetime
-    from tempodb import Client
+```python
+from datetime import datetime
+from tempodb import Client, DataPoint
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    data = [
-        DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
-        DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
-        DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
-    ]
+data = [
+    DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
+    DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
+    DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
+]
 
-    client.write_key("my-custom-key", data)
+client.write_key("my-custom-key", data)
+```
 
 ## write_bulk(ts, data)
 Writes values to multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is a
@@ -356,20 +370,22 @@ Nothing
 
 The following example writes datapoints to four separate series at the same timestamp.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    ts = datetime.datetime(2012, 1, 8, 1, 21)
-    data = [
-        { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
-        { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
-        { 'key': 'your-custom-key', 'v': 55.423 },
-        { 'key': 'foo', 'v': 324.991 },
-    ]
+ts = datetime.datetime(2012, 1, 8, 1, 21)
+data = [
+    { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+    { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+    { 'key': 'your-custom-key', 'v': 55.423 },
+    { 'key': 'foo', 'v': 324.991 },
+]
 
-    client.write_bulk(ts, data)
+client.write_bulk(ts, data)
+```
 
 ## increment_id(series_id, data)
 Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However the value is incremented by the datapoint value
@@ -386,18 +402,20 @@ Nothing
 
 The following example increments three datapoints of the series with id "38268c3b231f1266a392931e15e99231".
 
-    from datetime import datetime
-    from tempodb import Client
+```python
+from datetime import datetime
+from tempodb import Client, DataPoint
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    data = [
-        DataPoint(datetime(2012, 1, 1, 1, 0, 0), 1),
-        DataPoint(datetime(2012, 1, 1, 1, 1, 0), 2),
-        DataPoint(datetime(2012, 1, 1, 1, 2, 0), 1),
-    ]
+data = [
+    DataPoint(datetime(2012, 1, 1, 1, 0, 0), 1),
+    DataPoint(datetime(2012, 1, 1, 1, 1, 0), 2),
+    DataPoint(datetime(2012, 1, 1, 1, 2, 0), 1),
+]
 
-    client.increment_id("38268c3b231f1266a392931e15e99231", data)
+client.increment_id("38268c3b231f1266a392931e15e99231", data)
+```
 
 ## increment_key(series_key, data)
 Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However, the value is incremented by the datapoint value
@@ -415,18 +433,20 @@ Nothing
 
 The following example increments three datapoints of the series with key "my-custom-key".
 
-    from datetime import datetime
-    from tempodb import Client
+```python
+from datetime import datetime
+from tempodb import Client, DataPoint
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    data = [
-        DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
-        DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
-        DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
-    ]
+data = [
+    DataPoint(datetime(2012, 1, 1, 1, 0, 0), 12.34),
+    DataPoint(datetime(2012, 1, 1, 1, 1, 0), 1.874),
+    DataPoint(datetime(2012, 1, 1, 1, 2, 0), 21.52),
+]
 
-    client.increment_key("my-custom-key", data)
+client.increment_key("my-custom-key", data)
+```
 
 ## increment_bulk(ts, data)
 Increments values to multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is a
@@ -450,20 +470,22 @@ Nothing
 
 The following example increments datapoints of four separate series at the same timestamp.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    ts = datetime.datetime(2012, 1, 8, 1, 21)
-    data = [
-        { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
-        { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
-        { 'key': 'your-custom-key', 'v': 1 },
-        { 'key': 'foo', 'v': 1 },
-    ]
+ts = datetime.datetime(2012, 1, 8, 1, 21)
+data = [
+    { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
+    { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
+    { 'key': 'your-custom-key', 'v': 1 },
+    { 'key': 'foo', 'v': 1 },
+]
 
-    client.increment_bulk(ts, data)
+client.increment_bulk(ts, data)
+```
 
 ## delete_id(series_id, start, end)
 
@@ -483,16 +505,17 @@ Nothing
 
 The following example deletes data for the series with id "38268c3b231f1266a392931e15e99231" from 2012-01-01 to 2012-02-01.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    start = datetime.datetime(2012, 1, 1)
-    end = datetime.datetime(2012, 2, 1)
+start = datetime.datetime(2012, 1, 1)
+end = datetime.datetime(2012, 2, 1)
 
-    response = client.delete_id("38268c3b231f1266a392931e15e99231", start, end)
-
+response = client.delete_id("38268c3b231f1266a392931e15e99231", start, end)
+```
 
 ## delete_key(series_key, start, end)
 
@@ -512,12 +535,14 @@ Nothing
 
 The following example deletes data for the series with key "my-custom-key" from 2012-01-01 to 2012-02-01.
 
-    import datetime
-    from tempodb import Client
+```python
+import datetime
+from tempodb import Client
 
-    client = Client("api-key", "api-secret")
+client = Client("api-key", "api-secret")
 
-    start = datetime.datetime(2012, 1, 1)
-    end = datetime.datetime(2012, 2, 1)
+start = datetime.datetime(2012, 1, 1)
+end = datetime.datetime(2012, 2, 1)
 
-    response = client.delete_key("my-custom-key", start, end)
+response = client.delete_key("my-custom-key", start, end)
+```
