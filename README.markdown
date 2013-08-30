@@ -294,7 +294,7 @@ Nothing
 The following example write three datapoints to the series with id "38268c3b231f1266a392931e15e99231".
 
     from datetime import datetime
-    from tempodb import Client
+    from tempodb import Client, DataPoint
 
     client = Client("api-key", "api-secret")
 
@@ -322,7 +322,7 @@ Nothing
 The following example write three datapoints to the series with key "my-custom-key".
 
     from datetime import datetime
-    from tempodb import Client
+    from tempodb import Client, DataPoint
 
     client = Client("api-key", "api-secret")
 
@@ -387,7 +387,7 @@ Nothing
 The following example increments three datapoints of the series with id "38268c3b231f1266a392931e15e99231".
 
     from datetime import datetime
-    from tempodb import Client
+    from tempodb import Client, DataPoint
 
     client = Client("api-key", "api-secret")
 
@@ -416,7 +416,7 @@ Nothing
 The following example increments three datapoints of the series with key "my-custom-key".
 
     from datetime import datetime
-    from tempodb import Client
+    from tempodb import Client, DataPoint
 
     client = Client("api-key", "api-secret")
 
