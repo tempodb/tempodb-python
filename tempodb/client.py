@@ -6,6 +6,7 @@ tempodb/client.py
 Copyright (c) 2012 TempoDB, Inc. All rights reserved.
 """
 
+import datetime
 import re
 import requests
 import simplejson
@@ -22,6 +23,8 @@ API_VERSION = 'v1'
 
 VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_/\\ ]*$'
 RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
+
+DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
 
 
 class Client(object):
@@ -144,6 +147,10 @@ class Client(object):
         json = self.request('/data/', method='POST', params=body)
         return json
 
+    def write_multi(self, data):
+        json = self.request('/multi/', method='POST', params=data)
+        return json
+
     def increment_id(self, series_id, data):
         series_type = 'id'
         series_val = series_id
@@ -163,6 +170,10 @@ class Client(object):
             'data': data
         }
         json = self.request('/increment/', method='POST', params=body)
+        return json
+
+    def increment_multi(self, data):
+        json = self.request('/multi/increment/', method='POST', params=data)
         return json
 
     def _read(self, series_type, series_val, start, end, interval="", function="", tz=""):
@@ -220,11 +231,13 @@ class Client(object):
         if method == 'POST':
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
-            response = self.session.post(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
+            json_data = simplejson.dumps(params, default=DATETIME_HANDLER)
+            response = self.session.post(base, data=json_data, auth=(self.key, self.secret), headers=headers)
         elif method == 'PUT':
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
-            response = self.session.put(base, data=simplejson.dumps(params), auth=(self.key, self.secret), headers=headers)
+            json_data = simplejson.dumps(params, default=DATETIME_HANDLER)
+            response = self.session.put(base, data=json_data, auth=(self.key, self.secret), headers=headers)
         elif method == 'DELETE':
             base = self.build_full_url(target, params)
             response = self.session.delete(base, auth=(self.key, self.secret), headers=headers)
