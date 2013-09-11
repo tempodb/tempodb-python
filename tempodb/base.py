@@ -115,11 +115,10 @@ class Summary(object):
         return summary
 
 class DeleteSummary(object):
-    def __init__(self, deleted, found):
+    def __init__(self, deleted):
         self.deleted = deleted
-        self.found = found
 
     @staticmethod
     def from_json(json):
-        return DeleteSummary(json['deleted'], json['found'])
+        return DeleteSummary(json['deleted'])
 

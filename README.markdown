@@ -76,11 +76,10 @@ and a statistics summary table. The Summary table contains statistics for the ti
 * data - datapoints (list of DataPoints)
 * summary - a summary table of statistics for the queried range (Summary)
 
-## DeleteSummary(deleted, found)
+## DeleteSummary(deleted)
 Represents data associated with a delete operation. This is similar to what you would get back when executing a SQL `UPDATE` or `DELETE` query that returns the number of rows affected.
 ### Members
 * deleted - the number of series that were successfully deleted
-* found - the number of series found from the delete criteria
 
 
 # Client API

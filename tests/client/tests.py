@@ -82,11 +82,10 @@ class ClientTest(TestCase):
         self.assertEqual(series, expected)
 
     def test_delete_series(self):
-        self.client.session.delete.return_value = MockResponse(200, """{"found":2,"deleted":2}""")
+        self.client.session.delete.return_value = MockResponse(200, """{"deleted":2}""")
 
         summary = self.client.delete_series([], [], [], {'key': 'one', 'key2': 'two'})
         self.assertEqual(summary.deleted, 2)
-        self.assertEqual(summary.found, 2)
 
     def test_create_series(self):
         self.client.session.post.return_value = MockResponse(200, """{
