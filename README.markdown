@@ -389,7 +389,7 @@ The return body is either empty on success (response code will be 200) or contai
 
     data = [
         { 't': datetime.datetime(2013, 8, 21), 'v': 4.164 },
-        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231'},
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 134.3},
         {}
     ]
 
