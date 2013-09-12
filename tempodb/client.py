@@ -277,7 +277,7 @@ class Client(object):
             params['tag'] = tags
         if attributes:
             params['attr'] = attributes
-        params
+        return params
 
 
 class TempoDBApiException(Exception):
