@@ -164,12 +164,12 @@ if series_list:
 ```
 
 ## delete_series(*ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
-Delete series objects by the given criteria. This method has the same query parameters as `get_series`. Series can be deleted by id, key, tag and attribute.
+Delete series objects by the given criteria. This method has the same query parameters as `get_series`. Series can be deleted by id, key, tag and attribute. Calling this method with no filter arguments will delete all series in a given database (Similar to 'DELETE * FROM series' in sql)
 ### Parameters
-* ids - an array of ids to include (Array of strings)
-* keys - an array of keys to include (Array of strings)
-* tags - an array of tags to filter on. These tags are and'd together (Array of strings)
-* attributes - a hash of key/value pairs to filter on. These attributes are and'd together. (Hash)
+* ids - a list of ids to include (List of strings)
+* keys - a list of keys to include (List of strings)
+* tags - a list of tags to filter on. These tags are and'd together (List of strings)
+* attributes - a dict of key/value pairs to filter on. These attributes are and'd together. (Dict)
 
 ### Returns
 A DeleteSummary object
