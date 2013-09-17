@@ -11,7 +11,7 @@ from setuptools import setup
 
 install_requires = [
     'python-dateutil==1.5',
-    'requests==1.0',
+    'requests>=1.0',
     'simplejson',
 ]
 

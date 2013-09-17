@@ -380,3 +380,65 @@ class ClientTest(TestCase):
             headers=self.post_headers
         )
         self.assertEqual(result, '')
+
+
+    def test_write_multi(self):
+        self.client.session.post.return_value = MockResponse(200, "")
+        data = [
+            { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+            { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+            { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55.423 },
+            { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324.991 },
+        ]
+        result = self.client.write_multi(data)
+
+        self.client.session.post.assert_called_once_with(
+            'https://example.com/v1/multi/',
+            auth=('key', 'secret'),
+            data= simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
+            headers=self.post_headers
+        )
+        self.assertEqual(result, '')
+
+    def test_write_multi_207(self):
+        expected_response = """{
+            "{'error': {"multistatus": [
+                { "status": "422", "messages": [ "Must provide a series ID or key" ] },
+                { "status": "200", "messages": [] },
+                { "status": "422", "messages": [ "Must provide a numeric value", "Must provide a series ID or key" ] }
+            ]}}"""
+        self.client.session.post.return_value = MockResponse(207, expected_response)
+
+        data = [
+            { 't': datetime.datetime(2013, 8, 21), 'v': 4.164 },
+            { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231'},
+            {}
+        ]
+        result = self.client.write_multi(data)
+
+        self.client.session.post.assert_called_once_with(
+            'https://example.com/v1/multi/',
+            auth=('key', 'secret'),
+            data= simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
+            headers=self.post_headers
+        )
+
+        self.assertEqual(result["error"], expected_response)
+
+    def test_write_multi(self):
+        self.client.session.post.return_value = MockResponse(200, "")
+        data = [
+            { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4164 },
+            { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 7313 },
+            { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55423 },
+            { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324991 },
+        ]
+        result = self.client.write_multi(data)
+
+        self.client.session.post.assert_called_once_with(
+            'https://example.com/v1/multi/',
+            auth=('key', 'secret'),
+            data= simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
+            headers=self.post_headers
+        )
+        self.assertEqual(result, '')

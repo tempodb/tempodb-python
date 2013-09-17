@@ -387,6 +387,54 @@ data = [
 client.write_bulk(ts, data)
 ```
 
+## write_multi(data)
+Write datapoints to multiple series for multiple timestamps. This function takes an List of dictionaries containing the timestamp, either the series id or series key, and the value.  For example:
+
+    data = [
+        { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+        { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55.423 },
+        { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324.991 },
+    ]
+
+### Parameters
+* data - the data to write (List of {t, id, v} or {t, key, v} dictionaries)
+
+### Returns
+The return body is either empty on success (response code will be 200) or contains a error dictionary with a list of response objects in event of a single or multi-point failure (response code will be 207). Each response object contains a status code and an list of error messages. This list has a one to one correspondence with the original list. For example if you submitted this list:
+
+    data = [
+        { 't': datetime.datetime(2013, 8, 21), 'v': 4.164 },
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 134.3},
+        {}
+    ]
+
+You would recieve this 207 response body:
+
+    {'error':
+      {"multistatus": [
+        { "status": "422", "messages": [ "Must provide a series ID or key" ] },
+        { "status": "200", "messages": [] },
+        { "status": "422", "messages": [ "Must provide a numeric value", "Must provide a series ID or key" ] }
+    ]}}
+
+### Example
+
+The following example writes datapoints to four separate series to 4 different timestamps.
+
+    import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+    data = [
+        { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
+        { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55.423 },
+        { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324.991 },
+    ]
+
+    client.write_multi(data)
+
 ## increment_id(series_id, data)
 Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However the value is incremented by the datapoint value
 instead of overwritten. Values are incremented atomically, so this is useful for counting events. The series id and a list of DataPoints are required.
@@ -486,6 +534,54 @@ data = [
 
 client.increment_bulk(ts, data)
 ```
+
+## increment_multi(data)
+increment datapoints to multiple series for multiple timestamps. This function takes an List of dictionaries containing the timestamp, either the series id or series key, and the value.  For example:
+
+    data = [
+        { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 46 },
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 7 },
+        { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55 },
+        { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 1 },
+    ]
+
+### Parameters
+* data - the data to increment (List of {t, id, v} or {t, key, v} dictionaries)
+
+### Returns
+The return body is either empty on success (response code will be 200) or contains a error dictionary with a list of response objects in event of a single or multi-point failure (response code will be 207). Each response object contains a status code and an list of error messages. This list has a one to one correspondence with the original list. For example if you submitted this list:
+
+    data = [
+        { 't': datetime.datetime(2013, 8, 21), 'v': 4 },
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231'},
+        {}
+    ]
+
+You would recieve this 207 response body:
+
+    {'error':
+      {"multistatus": [
+        { "status": "422", "messages": [ "Must provide a series ID or key" ] },
+        { "status": "200", "messages": [] },
+        { "status": "422", "messages": [ "Must provide a numeric value", "Must provide a series ID or key" ] }
+    ]}}
+
+### Example
+
+The following example increments datapoints to four separate series to 4 different timestamps.
+
+    import datetime
+    from tempodb import Client
+
+    client = Client("api-key", "api-secret")
+    data = [
+        { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 46 },
+        { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 7 },
+        { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55 },
+        { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 1 },
+    ]
+
+    client.increment_multi(data)
 
 ## delete_id(series_id, start, end)
 
