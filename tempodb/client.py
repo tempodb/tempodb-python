@@ -43,7 +43,7 @@ class Client(object):
         json = self.request('/database/', method='POST', params=params)
         key = json.get('id', '')
         secret = json.get('password', '')
-
+        database = Database(key, secret)
         return database
 
     def get_series(self, ids=[], keys=[], tags=[], attributes={}):
@@ -52,8 +52,9 @@ class Client(object):
         series = [Series.from_json(s) for s in json]
         return series
 
-    def delete_series(self, ids=[], keys=[], tags=[], attributes={}):
+    def delete_series(self, ids=[], keys=[], tags=[], attributes={}, allow_truncation=False):
         params = self._normalize_params(ids, keys, tags, attributes)
+        params['allow_truncation'] = allow_truncation
         json = self.request('/series/', method='DELETE', params=params)
         return DeleteSummary.from_json(json)
 
@@ -263,8 +264,10 @@ class Client(object):
             elif isinstance(value, dict):
                 for k, v in value.items():
                     p.append(('%s[%s]' % (key, k), v))
+            elif isinstance(value, bool):
+                p.append((key, str(value).lower()))
             else:
-                p.append((key, value))
+                p.append((key, str(value)))
         return urllib.urlencode(p).encode("UTF-8")
 
     def _normalize_params(self, ids=[], keys=[], tags=[], attributes={}):

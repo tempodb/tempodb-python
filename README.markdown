@@ -163,13 +163,14 @@ if series_list:
     client.update_series(series)
 ```
 
-## delete_series(*ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*)
+## delete_series(*ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*, *allow_truncation=False*)
 Delete series objects by the given criteria. This method has the same query parameters as `get_series`. Series can be deleted by id, key, tag and attribute. Calling this method with no filter arguments will delete all series in a given database (Similar to 'DELETE * FROM series' in sql)
 ### Parameters
 * ids - a list of ids to include (List of strings)
 * keys - a list of keys to include (List of strings)
 * tags - a list of tags to filter on. These tags are and'd together (List of strings)
 * attributes - a dict of key/value pairs to filter on. These attributes are and'd together. (Dict)
+* allow_truncation - a boolean that must be passed when you wish to delete all your series. Mutually exclusive with the filter query parameters. (Boolean)
 
 ### Returns
 A DeleteSummary object
