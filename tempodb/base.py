@@ -114,5 +114,11 @@ class Summary(object):
         summary.__dict__.update(json)
         return summary
 
+class DeleteSummary(object):
+    def __init__(self, deleted):
+        self.deleted = deleted
 
+    @staticmethod
+    def from_json(json):
+        return DeleteSummary(json['deleted'])
 

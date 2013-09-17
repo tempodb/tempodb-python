@@ -14,7 +14,7 @@ import urllib
 import urllib2
 
 import tempodb
-from tempodb import DataPoint, DataSet, Series, Summary
+from tempodb import DataPoint, DataSet, DeleteSummary, Series, Summary
 
 
 API_HOST = 'api.tempo-db.com'
@@ -50,19 +50,16 @@ class Client(object):
         return database
 
     def get_series(self, ids=[], keys=[], tags=[], attributes={}):
-        params = {}
-        if ids:
-            params['id'] = ids
-        if keys:
-            params['key'] = keys
-        if tags:
-            params['tag'] = tags
-        if attributes:
-            params['attr'] = attributes
-
+        params = self._normalize_params(ids, keys, tags, attributes)
         json = self.request('/series/', method='GET', params=params)
         series = [Series.from_json(s) for s in json]
         return series
+
+    def delete_series(self, ids=[], keys=[], tags=[], attributes={}, allow_truncation=False):
+        params = self._normalize_params(ids, keys, tags, attributes)
+        params['allow_truncation'] = allow_truncation
+        json = self.request('/series/', method='DELETE', params=params)
+        return DeleteSummary.from_json(json)
 
     def create_series(self, key=None):
         if key and not RE_VALID_SERIES_KEY.match(key):
@@ -255,7 +252,7 @@ class Client(object):
             #except simplejson.decoder.JSONDecodeError, err:
             #    json = dict(error="JSON Parse Error (%s):\n%s" % (err, response.text))
         else:
-            json = dict(error=response.text)
+            raise TempoDBApiException(response.text)
         return json
 
     def build_full_url(self, target, params={}):
@@ -280,9 +277,23 @@ class Client(object):
             elif isinstance(value, dict):
                 for k, v in value.items():
                     p.append(('%s[%s]' % (key, k), v))
+            elif isinstance(value, bool):
+                p.append((key, str(value).lower()))
             else:
-                p.append((key, value))
+                p.append((key, str(value)))
         return urllib.urlencode(p).encode("UTF-8")
+
+    def _normalize_params(self, ids=[], keys=[], tags=[], attributes={}):
+        params = {}
+        if ids:
+            params['id'] = ids
+        if keys:
+            params['key'] = keys
+        if tags:
+            params['tag'] = tags
+        if attributes:
+            params['attr'] = attributes
+        return params
 
 
 class TempoDBApiException(Exception):

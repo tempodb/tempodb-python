@@ -76,6 +76,12 @@ and a statistics summary table. The Summary table contains statistics for the ti
 * data - datapoints (list of DataPoints)
 * summary - a summary table of statistics for the queried range (Summary)
 
+## DeleteSummary(deleted)
+Represents data associated with a delete operation. This is similar to what you would get back when executing a SQL `UPDATE` or `DELETE` query that returns the number of rows affected.
+### Members
+* deleted - the number of series that were successfully deleted
+
+
 # Client API
 
 ## create_series(*key=None*)
@@ -156,6 +162,33 @@ if series_list:
     series.tags = ["tag3"]
     client.update_series(series)
 ```
+
+## delete_series(*ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*, *allow_truncation=False*)
+Delete series objects by the given criteria. This method has the same query parameters as `get_series`. Series can be deleted by id, key, tag and attribute. Calling this method with no filter arguments will delete all series in a given database (Similar to 'DELETE * FROM series' in sql)
+### Parameters
+* ids - a list of ids to include (List of strings)
+* keys - a list of keys to include (List of strings)
+* tags - a list of tags to filter on. These tags are and'd together (List of strings)
+* attributes - a dict of key/value pairs to filter on. These attributes are and'd together. (Dict)
+* allow_truncation - a boolean that must be passed when you wish to delete all your series. Mutually exclusive with the filter query parameters. (Boolean)
+
+### Returns
+A DeleteSummary object
+
+### Example
+
+The following example deletes all series with "tag1" and "tag2" and attribute "attr1" equal to "value1".
+
+	from tempodb import Client
+
+	client = Client("api-key", "api-secret")
+
+	tags = ["tag1", "tag2"]
+	attributes = {
+		"attr1": "value1"
+	}
+
+	summary = client.delete_series(tags=tags, attributes=attributes)
 
 ## read(start, end, *interval=""*, *function=""*, *ids=[]*, *keys=[]*, *tags=[]*, *attributes={}*, *tz=""*)
 
