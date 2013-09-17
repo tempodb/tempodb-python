@@ -252,7 +252,7 @@ class Client(object):
             #except simplejson.decoder.JSONDecodeError, err:
             #    json = dict(error="JSON Parse Error (%s):\n%s" % (err, response.text))
         else:
-            raise TempoDBApiException(response.text)
+            json = dict(error=response.text)
         return json
 
     def build_full_url(self, target, params={}):
