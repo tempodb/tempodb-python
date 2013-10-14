@@ -39,16 +39,6 @@ class Client(object):
         self.session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
         self.session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
 
-    def create_database(self, name=""):
-        params = {
-            'name': name,
-        }
-        json = self.request('/database/', method='POST', params=params)
-        key = json.get('id', '')
-        secret = json.get('password', '')
-        database = Database(key, secret)
-        return database
-
     def get_series(self, ids=[], keys=[], tags=[], attributes={}):
         params = self._normalize_params(ids, keys, tags, attributes)
         json = self.request('/series/', method='GET', params=params)
