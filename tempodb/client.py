@@ -14,7 +14,7 @@ import urllib
 import urllib2
 
 import tempodb
-from tempodb import DataPoint, DataSet, DeleteSummary, Series, Summary
+from tempodb import DataPoint, DataSet, DeleteSummary, Series, SingleValueSet, Summary
 
 
 API_HOST = 'api.tempo-db.com'
@@ -102,6 +102,36 @@ class Client(object):
         series_type = 'key'
         series_val = series_key
         return self._read(series_type, series_val, start, end, interval, function, tz)
+
+    def single_value_id(self, series_id, ts, direction=''):
+        series_type = 'id'
+        series_val = series_id
+        return self._single_value(series_type, series_val, ts, direction)
+
+    def single_value_key(self, series_key, ts, direction=''):
+        series_type = 'key'
+        series_val = series_key
+        return self._single_value(series_type, series_val, ts, direction)
+
+    def single_value(self, ts, direction="", ids=[], keys=[], tags=[], attributes={}):
+        params = {
+            'ts': ts.isoformat()
+        }
+
+        if direction:
+            params['direction'] = direction
+        if ids:
+            params['id'] = ids
+        if keys:
+            params['key'] = keys
+        if tags:
+            params['tag'] = tags
+        if attributes:
+            params['attr'] = attributes
+
+        url = '/single/'
+        json = self.request(url, method='GET', params=params)
+        return [SingleValueSet.from_json(j) for j in json]
 
     def delete_id(self, series_id, start, end, **kwargs):
         series_type = 'id'
@@ -206,6 +236,22 @@ class Client(object):
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
+
+    def _single_value(self, series_type, series_val, ts, direction):
+        params = {
+                'ts': ts.isoformat(),
+                }
+
+        if direction:
+            params['direction'] = direction
+
+        url = '/series/%s/%s/single/' % (series_type, urllib2.quote(series_val, ""))
+        json = self.request(url, method='GET', params=params)
+
+        if 'error' in json:
+            return json
+        return SingleValueSet.from_json(json)
+
 
     def request(self, target, method='GET', params={}):
         assert method in ['GET', 'POST', 'PUT', 'DELETE'], "Only 'GET', 'POST', 'PUT', 'DELETE' are allowed for method."

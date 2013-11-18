@@ -122,3 +122,18 @@ class DeleteSummary(object):
     def from_json(json):
         return DeleteSummary(json['deleted'])
 
+
+class SingleValueSet(object):
+    def __init__(self, series, data):
+        self.series = series
+        self.data = data
+
+    def __str__(self):
+        return str(self.__dict__)
+
+    @staticmethod
+    def from_json(json):
+        series = Series.from_json(json.get('series', {}))
+        data_or_null = json.get('data', None)
+        data = DataPoint.from_json(data_or_null) if data_or_null != None else None
+        return SingleValueSet(series, data)
