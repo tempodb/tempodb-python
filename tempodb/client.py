@@ -240,7 +240,7 @@ class Client(object):
     def _single_value(self, series_type, series_val, ts, direction):
         params = {
                 'ts': ts.isoformat(),
-                }
+        }
 
         if direction:
             params['direction'] = direction

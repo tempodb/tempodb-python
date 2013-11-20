@@ -8,7 +8,7 @@ import simplejson
 from unittest2 import TestCase
 
 import tempodb
-from tempodb import Client, DataPoint, DataSet, Series, Summary
+from tempodb import Client, DataPoint, DataSet, Series, SingleValueSet, Summary
 
 
 class MockResponse(object):
@@ -431,7 +431,7 @@ class ClientTest(TestCase):
 
         self.assertEqual(result["error"], expected_response)
 
-    def test_write_multi(self):
+    def test_increment_multi(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [
             { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4164 },
@@ -448,3 +448,86 @@ class ClientTest(TestCase):
             headers=self.post_headers
         )
         self.assertEqual(result, '')
+
+    def test_single_value_id(self):
+        self.client.session.get.return_value = MockResponse(200, """{
+            "series": {
+                "id": "id",
+                "key": "key1",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "data": {"t": "2012-03-27T00:00:00.000", "v": 12.34}
+        }""")
+
+        ts = datetime.datetime(2012, 3, 27)
+        dataset = self.client.single_value_id('id', ts)
+
+        expected = SingleValueSet(Series('id', 'key1'), DataPoint(ts, 12.34))
+        self.client.session.get.assert_called_once_with(
+            'https://example.com/v1/series/id/id/single/?ts=2012-03-27T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(dataset, expected)
+
+    def test_single_value_key(self):
+        self.client.session.get.return_value = MockResponse(200, """{
+            "series": {
+                "id": "id",
+                "key": "key1",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "data": {"t": "2012-03-27T00:00:00.000", "v": 12.34}
+        }""")
+
+        ts = datetime.datetime(2012, 3, 27)
+        dataset = self.client.single_value_key('key1', ts)
+
+        expected = SingleValueSet(Series('id', 'key1'), DataPoint(ts, 12.34))
+        self.client.session.get.assert_called_once_with(
+            'https://example.com/v1/series/key/key1/single/?ts=2012-03-27T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(dataset, expected)
+
+    def test_single_value(self):
+        self.client.session.get.return_value = MockResponse(200, """[
+            {
+                "series": {
+                    "id": "id",
+                    "key": "key1",
+                    "name": "",
+                    "tags": ["tag"],
+                    "attributes": {}
+                },
+                "data": {"t": "2012-03-27T01:00:00.000", "v": 34.12}
+            },
+            {
+                "series": {
+                    "id": "id2",
+                    "key": "key2",
+                    "name": "",
+                    "tags": ["tag"],
+                    "attributes": {}
+                },
+                "data": {"t": "2012-03-27T00:00:00.000", "v": 12.34}
+            }
+        ]""")
+
+        ts1 = datetime.datetime(2012, 3, 27)
+        ts2 = datetime.datetime(2012, 3, 27, 1, 0, 0, 0)
+        dataset = self.client.single_value(ts1, direction='nearest', tags=['tag'])
+
+        expected = [SingleValueSet(Series('id', 'key1', tags=['tag']), DataPoint(ts2, 34.12)),
+                    SingleValueSet(Series('id2', 'key2', tags=['tag']), DataPoint(ts1, 12.34))]
+        self.client.session.get.assert_called_once_with(
+            'https://example.com/v1/single/?direction=nearest&tag=tag&ts=2012-03-27T00%3A00%3A00',
+            auth=('key', 'secret'),
+            headers=self.get_headers
+        )
+        self.assertEqual(dataset, expected)
