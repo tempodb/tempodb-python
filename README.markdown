@@ -81,6 +81,12 @@ Represents data associated with a delete operation. This is similar to what you 
 ### Members
 * deleted - the number of series that were successfully deleted
 
+## SingleValueSet(series, data)
+Represents the response of a single value query. This contains the series object of the series queried plus the DataPoint returned (or None if no datapoint matched the query)
+### Members
+* series - the series queried (Series)
+* data - the datapoint returned (DataPoint or None)
+
 
 # Client API
 
@@ -320,6 +326,110 @@ end = datetime.datetime(2012, 2, 1)
 
 data = client.read_key("my-custom-key", start, end, interval="1day", function="min")
 ```
+
+## single_value_id(series_id, ts, *direction=""*)
+Requests a single value for the series specified by id. This will return a datapoint exactly determined by the supplied timestamp (ts) or this function can also search for datapoints.
+
+### Parameters
+
+* series_id - id for the series to retrieve single value (string)
+* ts - the requested timestamp for a datapoint. (datetime)
+* direction - the specified search direction (string). Options are:
+    * exact - returns the datapoint exactly at the timestamp (Default)
+    * before - returns the datapoint exactly at the timestamp or searches backwards in time for the next datapoint
+    * after - returns the datapoint exactly at the timestamp or searches forwards in time for the next datapoint
+    * nearest - returns the datapoint exactly at the timestamp or searches both backwards and forwards and returns the datapoint closest to the timestamp
+
+### Returns
+
+A SingleValueSet containing the series object and the datapoint.
+Note: the data field will be None if no datapoint was found.
+
+## Example
+
+The example finds the nearest datapoint to the given timestamp.
+
+```python
+import datetime
+from tempodb import Client
+
+client = Client("api-key", "api-secret")
+
+ts = datetime.datetime(2012, 1, 1)
+
+data = client.single_value_id("6fefeba655504694b21235acf8cdae5f", ts, direction="nearest")
+```
+
+
+## single_value_key(series_key, ts, *direction=""*)
+Requests a single value for the series specified by key. This will return a datapoint exactly determined by the supplied timestamp (ts) or this function can also search for datapoints.
+
+### Parameters
+
+* series_key - key for the series to retrieve single value (string)
+* ts - the requested timestamp for a datapoint. (datetime)
+* direction - the specified search direction (string). Options are:
+    * exact - returns the datapoint exactly at the timestamp (Default)
+    * before - returns the datapoint exactly at the timestamp or searches backwards in time for the next datapoint
+    * after - returns the datapoint exactly at the timestamp or searches forwards in time for the next datapoint
+    * nearest - returns the datapoint exactly at the timestamp or searches both backwards and forwards and returns the datapoint closest to the timestamp
+
+### Returns
+
+A SingleValueSet containing the series object and the datapoint.
+Note: the data field will be None if no datapoint was found.
+
+## Example
+
+The example finds the exact datapoint at the given timestamp.
+
+```python
+import datetime
+from tempodb import Client
+
+client = Client("api-key", "api-secret")
+
+ts = datetime.datetime(2012, 1, 1)
+
+data = client.single_value_key("my-custom-key", ts)
+```
+
+
+## single_value(ts, direction="", ids=[], keys=[], tags=[], attributes={})
+Requests a single value for all the series specified by the filter criteria. This will return a datapoint exactly determined by the supplied timestamp (ts) or this function can also search for datapoints.
+
+### Parameters
+
+* ts - the requested timestamp for a datapoint. (DateTime)
+* ids - an array of ids to include (List of strings)
+* keys - an array of keys to include (List of strings)
+* tags - an array of tags to filter on. These tags are and'd together (List of strings)
+* attributes - a object of key/value pairs to filter on. These attributes are and'd together. (Dict)
+* direction - the specified search direction (string). Options are:
+    * exact - returns the datapoint exactly at the timestamp (Default)
+    * before - returns the datapoint exactly at the timestamp or searches backwards in time for the next datapoint
+    * after - returns the datapoint exactly at the timestamp or searches forwards in time for the next datapoint
+    * nearest - returns the datapoint exactly at the timestamp or searches both backwards and forwards and returns the datapoint closest to the timestamp
+
+### Returns
+
+A list of SingleValueSet containing the series object and the datapoint.
+
+## Example
+
+The example will find the datapoints before the given timestamp for all series with "tag1" and "tag3.
+
+```python
+import datetime
+from tempodb import Client
+
+client = Client("api-key", "api-secret")
+
+ts = datetime.datetime(2012, 1, 1)
+
+data = client.single_value(ts, direction="before", tags=["tag1", "tag3"])
+```
+
 
 ## write_id(series_id, data)
 
