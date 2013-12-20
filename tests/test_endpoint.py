@@ -22,8 +22,10 @@ class TestEndpoint(unittest.TestCase):
         params = {'foo': {'bar': 'baz',
                           'abc': 'def'}}
         ret = p.make_url_args(params)
-        self.assertIn('foo%5Bbar%5D=baz', ret)
-        self.assertIn('foo%5Babc%5D=def', ret)
+        pass1 = 'foo%5Bbar%5D=baz' in ret
+        pass2 = 'foo%5Babc%5D=def' in ret
+        self.assertTrue(pass1)
+        self.assertTrue(pass2)
 
     def test_make_url_args_bool_true(self):
         params = {'foo': True}
