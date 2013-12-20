@@ -3,13 +3,16 @@
 *.egg
 *.db
 *.pid
+*.swp
 .coverage
 .DS_Store
 pip-log.txt
 /*.egg-info
+/tempodb/.ropeproject
 /build
 /cover
 /dist
 bin/
 include/
 lib/
+docs/build/
