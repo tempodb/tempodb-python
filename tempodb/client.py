@@ -1,290 +1,465 @@
-#!/usr/bin/env python
-# encoding: utf-8
-"""
-tempodb/client.py
-
-Copyright (c) 2012 TempoDB, Inc. All rights reserved.
-"""
-
-import datetime
-import re
-import requests
-import simplejson
-import urllib
-import urllib2
-
-import tempodb
-from tempodb import DataPoint, DataSet, DeleteSummary, Series, Summary
+import functools
+import urlparse
+import json
+import endpoint
+import protocol
+from response import Response
+from temporal.validate import check_time_param
 
 
-API_HOST = 'api.tempo-db.com'
-API_PORT = 443
-API_VERSION = 'v1'
+def make_series_url(key):
+    """Given a series key, generate a valid URL to the series endpoint for
+    that key.
 
-VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_/\\ ]*$'
-RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
+    :param string key: the series key
+    :rtype: string"""
 
-DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+    url = urlparse.urljoin(endpoint.SERIES_ENDPOINT, 'key/')
+    url = urlparse.urljoin(url, key)
+    return url
+
+
+class with_response_type(object):
+    """Decorator for ensuring the Response object returned by the
+    :class:`Client` object has a data attribute that corresponds to the
+    object type expected from the TempoDB API.  This class should not be
+    used by user code.
+
+    The "t" argument should be a string corresponding to the name of a class
+    from the :mod:`tempodb.protocol.objects` module, or a single element list
+    with the element being the name of a class from that module if the API
+    endpoint will return a list of those objects.
+
+    :param t: the type of object to cast the TempoDB response to
+    :type t: list or string"""
+
+    def __init__(self, t):
+        self.t = t
+
+    def __call__(self, f, *args, **kwargs):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            resp = f(*args, **kwargs)
+            #dont try this at home kids
+            session = args[0].session
+            resp_obj = Response(resp, session)
+            if resp_obj.status == 200:
+                resp_obj._cast_payload(self.t)
+            return resp_obj
+        return wrapper
 
 
 class Client(object):
+    """Entry point class into the TempoDB API.  The client should be
+    initialized with your API key and secret obtained from your TempoDB
+    login.
 
-    def __init__(self, key, secret, host=API_HOST, port=API_PORT, secure=True, pool_connections=10, pool_maxsize=10):
-        self.key = key
-        self.secret = secret
-        self.host = host
-        self.port = port
-        self.secure = secure
-        self.session = requests.session()
-        self.session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
-        self.session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
+    The methods are grouped as follows:
 
-    def get_series(self, ids=[], keys=[], tags=[], attributes={}):
-        params = self._normalize_params(ids, keys, tags, attributes)
-        json = self.request('/series/', method='GET', params=params)
-        series = [Series.from_json(s) for s in json]
-        return series
+    SERIES
 
-    def delete_series(self, ids=[], keys=[], tags=[], attributes={}, allow_truncation=False):
-        params = self._normalize_params(ids, keys, tags, attributes)
-        params['allow_truncation'] = allow_truncation
-        json = self.request('/series/', method='DELETE', params=params)
-        return DeleteSummary.from_json(json)
+        * :meth:`create_series`
+        * :meth:`delete_series`
+        * :meth:`get_series`
+        * :meth:`list_series`
+        * :meth:`update_series`
 
-    def create_series(self, key=None):
-        if key and not RE_VALID_SERIES_KEY.match(key):
-            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+    READING DATA
 
-        params = {}
-        if key is not None:
-            params['key'] = key
+        * :meth:`read_data`
+        * :meth:`read_multi`
 
-        json = self.request('/series/', method='POST', params=params)
-        series = Series.from_json(json)
-        return series
+    WRITING DATA
 
+        * :meth:`write_data`
+        * :meth:`write_multi`
+
+    DELETING
+
+        * :meth:`delete`
+
+    SINGLE VALUE
+
+        * :meth:`single_value`
+        * :meth:`multi_series_single_value`
+
+    :param string key: your API key
+    :param string secret: your API secret"""
+
+    def __init__(self, key, secret, base_url=endpoint.BASE_URL):
+        self.session = endpoint.HTTPEndpoint(key, secret, base_url)
+
+    #SERIES METHODS
+    @with_response_type('Nothing')
+    def create_series(self, key=None, tags=[], attrs={}):
+        """Create a new series with an optional string key.  A list of tags
+        and a map of attributes can also be optionally supplied.
+
+        :param string key: (optional) a string key for the series
+        :param list tags: (optional) the tags to create the series with
+        :param dict attrs: (optional) the attributes to the create the series
+                           with
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        body = protocol.make_series_key(key, tags, attrs)
+        resp = self.session.post(endpoint.SERIES_ENDPOINT, body)
+        return resp
+
+    @with_response_type('Nothing')
+    def delete_series(self, key=None, tag=None, attr=None,
+                      allow_truncation=False):
+        """Delete a series according to the given criteria.
+
+        **Note:** for the key argument, the filter will return the *union* of
+        those values.  For the tag and attr arguments, the filter will return
+        the *intersection* of those values.
+
+        :param key: filter by one or more series keys
+        :type key: list or string
+        :param tag: filter by one or more tags
+        :type tag: list or string
+        :param dict attr: filter by one or more key-value attributes
+        :param bool allow_truncation: whether to allow full deletion of a
+                                      database
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        params = {
+            'key': key,
+            'tag': tag,
+            'attr': attr,
+            'allow_truncation': str(allow_truncation).lower()
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([endpoint.SERIES_ENDPOINT, url_args])
+        resp = self.session.delete(url)
+        return resp
+
+    @with_response_type('Series')
+    def get_series(self, key):
+        """Get a series object from TempoDB given its key.
+
+        :param string key: a string name for the series
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        url = make_series_url(key)
+        resp = self.session.get(url)
+        return resp
+
+    def list_series(self, key=None, tag=None, attr=None,
+                    limit=1000):
+        """Get a list of all series matching the given criteria.
+
+        **Note:** for the key argument, the filter will return the *union* of
+        those values.  For the tag and attr arguments, the filter will return
+        the *intersection* of those values.
+
+        :param key: filter by one or more series keys
+        :type key: list or string
+        :param tag: filter by one or more tags
+        :type tag: list or string
+        :param dict attr: filter by one or more key-value attributes
+        :rtype: :class:`tempodb.protocol.cursor.SeriesCursor` object"""
+
+        params = {
+            'key': key,
+            'tag': tag,
+            'attr': attr,
+            'limit': limit
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([endpoint.SERIES_ENDPOINT, url_args])
+        resp = self.session.get(url)
+        r = Response(resp, self.session)
+        data = json.loads(r.resp.text)
+        c = protocol.SeriesCursor(data, protocol.Series, r)
+        return c
+
+    @with_response_type('Series')
     def update_series(self, series):
-        json = self.request('/series/id/%s/' % (series.id,), method='PUT', params=series.to_json())
-        series = Series.from_json(json)
-        return series
+        """Update a series with new attributes.  This does not change
+        any of the data written to this series. The recommended workflow for
+        series updates is to pull a Series object down using the
+        :meth:`get_series` method, change its attributes, then pass it into
+        this method.
 
-    def read(self, start, end, interval="", function="", ids=[], keys=[], tags=[], attributes={}, tz=""):
+        :param series: the series to update
+        :type series: `tempodb.protocol.Series` object
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        url = urlparse.urljoin(endpoint.SERIES_ENDPOINT, 'key/')
+        url = urlparse.urljoin(url, series.key)
+
+        resp = self.session.put(url, series.to_json())
+        return resp
+
+    #DATA READING METHODS
+    def read_data(self, key, start=None, end=None, fold=None,
+                  period=None, tz=None, limit=1000):
+        """Read data from a series given its ID or key.  Start and end times
+        must be supplied.  They can either be ISO8601 encoded strings (i.e.
+        2012-01-08T00:21:54.000+0000) or Python Datetime objects, which will
+        be converted for you.
+
+        The function parameter is optional and can include string values such
+        as "sum" and "avg".  This will apply a folding function to your
+        rollup of data.  The optional interval parameter will downsample your
+        data according to the given resolution ("1min", "2day", etc).
+
+        Finally, the optional tz parameter can be used to specify a time zone
+        for your output.  Please see
+        `here <https://tempo-db.com/docs/api/timezone/>`_ for a list of a
+        valid timezone values.
+
+        :param string key: the series key to use
+        :param start: the start time for the data points
+        :type start: string or Datetime
+        :param end: the end time for the data points
+        :type end: string or Datetime
+        :param string function: (optional) the name of a rollup function to use
+        :param string interval: (optional) downsampling rate for the data
+        :param string tz: (optional) the timezone to place the data into
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
+
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'segment')
+
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
         params = {
-            'start': start.isoformat(),
-            'end': end.isoformat()
+            'start': vstart,
+            'end': vend,
+            'rollup.fold': fold,
+            'rollup.period': period,
+            'tz': tz,
+            'limit': limit
         }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        r = Response(resp, self.session)
+        data = json.loads(r.resp.text)
+        c = protocol.DataPointCursor(data['data'], protocol.DataPoint, r,
+                                     tz=data['tz'])
+        return c
 
-        if ids:
-            params['id'] = ids
-        if keys:
-            params['key'] = keys
-        if interval:
-            params['interval'] = interval
-        if function:
-            params['function'] = function
-        if tags:
-            params['tag'] = tags
-        if attributes:
-            params['attr'] = attributes
-        if tz:
-            params['tz'] = tz
+    #@with_response_type(['DataSet'])
+    #def read_multi(self, key=None, start=None, end=None,
+    #               function=None, interval=None, tz=None, tag=None,
+    #               attr=None):
+    #    """Read data from multiple series given filter criteria.  See the
+    #    :meth:`list_series` method for a description of how the filter
+    #    criteria are applied, and the :meth:`read_data` method for how to
+    #    work with the start, end, function, interval, and tz parameters.
+    #
+    #    :param series_id: (optional) filter by one or more series IDs
+    #    :type series_id: list or string
+    #    :param key: (optional) filter by one or more series keys
+    #    :type key: list or string
+    #    :param tag: filter by one or more tags
+    #    :type tag: list or string
+    #    :param dict attr: (optional) filter by one or more key-value attributes
+    #    :param start: the start time for the data points
+    #    :type start: string or Datetime
+    #    :param end: the end time for the data points
+    #    :type end: string or Datetime
+    #    :param string function: (optional) the name of a rollup function to use
+    #    :param string interval: (optional) downsampling rate for the data
+    #    :param string tz: (optional) the timezone to place the data into
+    #    :rtype: :class:`tempodb.response.Response` object"""
+#
+    #    url = 'data'
+#
+    #    vstart = check_time_param(start)
+    #    vend = check_time_param(end)
+    #    params = {
+    #        'key': key,
+    #        'tag': tag,
+    #        'attr': attr,
+    #        'start': vstart,
+    #        'end': vend,
+    #        'function': function,
+    #        'interval': interval,
+    #        'tz': tz
+    #    }
+    #    url_args = endpoint.make_url_args(params)
+    #    url = '?'.join([url, url_args])
+    #    resp = self.session.get(url)
+    #    return resp
 
-        url = '/data/'
-        json = self.request(url, method='GET', params=params)
-        return [DataSet.from_json(j) for j in json]
+    #WRITE DATA METHODS
+    @with_response_type('Nothing')
+    def write_data(self, key, data, tags=[], attrs={}):
+        """Write a set a datapoints into a series by its key.  For now,
+        the tags and attributes arguments are ignored.
 
-    def read_id(self, series_id, start, end, interval="", function="", tz=""):
-        series_type = 'id'
-        series_val = series_id
-        return self._read(series_type, series_val, start, end, interval, function, tz)
+        :param string key: the series to write data into
+        :param list data: a list of DataPoints to write
+        :rtype: :class:`tempodb.response.Response` object"""
 
-    def read_key(self, series_key, start, end, interval="", function="", tz=""):
-        series_type = 'key'
-        series_val = series_key
-        return self._read(series_type, series_val, start, end, interval, function, tz)
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'data')
 
-    def delete_id(self, series_id, start, end, **kwargs):
-        series_type = 'id'
-        series_val = series_id
-        return self._delete(series_type, series_val, start, end, kwargs)
+        #revisit later if there are server changes to take these into
+        #account
+        #params = {
+        #    'tag': tag,
+        #    'attr': attr,
+        #}
+        #url_args = endpoint.make_url_args(params)
+        #url = '?'.join([url, url_args])
 
-    def delete_key(self, series_key, start, end, **kwargs):
-        series_type = 'key'
-        series_val = series_key
-        return self._delete(series_type, series_val, start, end, kwargs)
+        dlist = [d.to_dictionary() for d in data]
+        body = json.dumps(dlist)
+        resp = self.session.post(url, body)
+        return resp
 
-    def write_id(self, series_id, data):
-        series_type = 'id'
-        series_val = series_id
-        return self._write(series_type, series_val, data)
-
-    def write_key(self, series_key, data):
-        if series_key and not RE_VALID_SERIES_KEY.match(series_key):
-            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
-
-        series_type = 'key'
-        series_val = series_key
-        return self._write(series_type, series_val, data)
-
-    def write_bulk(self, ts, data):
-        body = {
-            't': ts.isoformat(),
-            'data': data
-        }
-        json = self.request('/data/', method='POST', params=body)
-        return json
-
+    @with_response_type('Nothing')
     def write_multi(self, data):
-        json = self.request('/multi/', method='POST', params=data)
-        return json
+        """Write a set a datapoints into multiple series by key or series ID.
+        Each :class:`tempodb.protocol.objects.DataPoint` object should have
+        either a key or id attribute set that indicates which series it will
+        be written into::
 
-    def increment_id(self, series_id, data):
-        series_type = 'id'
-        series_val = series_id
-        return self._increment(series_type, series_val, data)
+            [
+                {"t": "2012-...", "key": "foo", "v": 1},
+                {"t": "2012-...", "id": "bar", "v": 1}
+            ]
 
-    def increment_key(self, series_key, data):
-        if series_key and not RE_VALID_SERIES_KEY.match(series_key):
-            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+        If a non-existent key or ID is passed in, a series will be created
+        for that key/ID and the data point written in to the new series.
 
-        series_type = 'key'
-        series_val = series_key
-        return self._increment(series_type, series_val, data)
+        :param list data: a list of DataPoints to write
+        :rtype: :class:`tempodb.response.Response` object"""
 
-    def increment_bulk(self, ts, data):
-        body = {
-            't': ts.isoformat(),
-            'data': data
-        }
-        json = self.request('/increment/', method='POST', params=body)
-        return json
+        url = 'multi/'
 
-    def increment_multi(self, data):
-        json = self.request('/multi/increment/', method='POST', params=data)
-        return json
+        dlist = [d.to_dictionary() for d in data]
+        body = json.dumps(dlist)
+        resp = self.session.post(url, body)
+        return resp
 
-    def _read(self, series_type, series_val, start, end, interval="", function="", tz=""):
+    #INCREMENT METHODS
+    #@with_response_type('Nothing')
+    #def increment(self, key, data=[]):
+    #    """Increment a series a data points by the specified amount.  For
+    #    instance, incrementing with the following data::
+#
+    #        data = [{"t": "2012-01-08T00:21:54.000+0000", "v": 4.164}]
+#
+    #    would increment the value at that time by 4.
+#
+    #    **Note:** all floating point values are converted to longs before
+    #    the increment takes place.
+#
+    #    :param string key: the series whose value to increment
+    #    :param list data: the data points to incrememnt
+    #    :rtype: :class:`tempodb.response.Response` object"""
+
+    #    url = make_series_url(key)
+    #    url = urlparse.urljoin(url + '/', 'increment')
+    #    dlist = [d.to_dictionary() for d in data]
+    #    body = json.dumps(dlist)
+    #    resp = self.session.post(url, body)
+    #    return resp
+
+    #SINGLE VALUE METHODS
+    @with_response_type('SingleValue')
+    def single_value(self, key, ts=None, direction=None):
+        """Return a single value for a series.  You can supply a timestamp
+        as the ts argument, otherwise the search defaults to the current
+        time.
+
+        The dire`ction argument can be one of "exact", "before", "after", or
+        "nearest".
+
+        :param string key: the key for the series to use
+        :param ts: (optional) the time to begin searching from
+        :type ts: ISO8601 string or Datetime object
+        :param string direction: criterion for the search
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'single')
+
+        if ts is not None:
+            vts = check_time_param(ts)
+        else:
+            vts = None
+
         params = {
-            'start': start.isoformat(),
-            'end': end.isoformat(),
+            'ts': vts,
+            'direction': direction
         }
 
-        # add rollup interval and function if supplied
-        if interval:
-            params['interval'] = interval
-        if function:
-            params['function'] = function
-        if tz:
-            params['tz'] = tz
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        return resp
 
-        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
-        json = self.request(url, method='GET', params=params)
+    @with_response_type(['SingleValue'])
+    def multi_series_single_value(self, key=None, ts=None, direction=None,
+                                  attr={}, tag=[]):
+        """Return a single value for multiple series.  You can supply a
+        timestamp as the ts argument, otherwise the search defaults to the
+        current time.
 
-        #we got an error
-        if 'error' in json:
-            return json
-        return DataSet.from_json(json)
+        The direction argument can be one of "exact", "before", "after", or
+        "nearest".
 
-    def _delete(self, series_type, series_val, start, end, options):
+        The id, key, tag, and attr arguments allow you to filter for series.
+        See the :meth:`list_series` method for an explanation of their use.
+
+        :param string key: (optional) a list of keys for the series to use
+        :param ts: (optional) the time to begin searching from
+        :type ts: ISO8601 string or Datetime object
+        :param string direction: criterion for the search
+        :param tag: filter by one or more tags
+        :type tag: list or string
+        :param dict attr: filter by one or more key-value attributes
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        url = 'single/'
+        if ts is not None:
+            vts = check_time_param(ts)
+        else:
+            vts = None
+
         params = {
-            'start': start.isoformat(),
-            'end': end.isoformat(),
-        }
-        params.update(options)
-        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
-        json = self.request(url, method='DELETE', params=params)
-        return json
-
-    def _write(self, series_type, series_val, data):
-        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
-        body = [dp.to_json() for dp in data]
-        json = self.request(url, method='POST', params=body)
-        return json
-
-    def _increment(self, series_type, series_val, data):
-        url = '/series/%s/%s/increment/' % (series_type, urllib2.quote(series_val, ""))
-        body = [dp.to_json() for dp in data]
-        json = self.request(url, method='POST', params=body)
-        return json
-
-    def request(self, target, method='GET', params={}):
-        assert method in ['GET', 'POST', 'PUT', 'DELETE'], "Only 'GET', 'POST', 'PUT', 'DELETE' are allowed for method."
-
-        headers = {
-            'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), ),
-            'Accept-Encoding': 'gzip',
+            'key': key,
+            'tag': tag,
+            'attr': attr,
+            'ts': vts,
+            'direction': direction
         }
 
-        if method == 'POST':
-            headers['Content-Type'] = "application/json"
-            base = self.build_full_url(target)
-            json_data = simplejson.dumps(params, default=DATETIME_HANDLER)
-            response = self.session.post(base, data=json_data, auth=(self.key, self.secret), headers=headers)
-        elif method == 'PUT':
-            headers['Content-Type'] = "application/json"
-            base = self.build_full_url(target)
-            json_data = simplejson.dumps(params, default=DATETIME_HANDLER)
-            response = self.session.put(base, data=json_data, auth=(self.key, self.secret), headers=headers)
-        elif method == 'DELETE':
-            base = self.build_full_url(target, params)
-            response = self.session.delete(base, auth=(self.key, self.secret), headers=headers)
-        else:
-            base = self.build_full_url(target, params)
-            response = self.session.get(base, auth=(self.key, self.secret), headers=headers)
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        return resp
 
-        if response.status_code == 200:
-            if response.text:
-                json = simplejson.loads(response.text)
-            else:
-                json = ''
-            #try:
-            #    json = simplejson.loads(response.text)
-            #except simplejson.decoder.JSONDecodeError, err:
-            #    json = dict(error="JSON Parse Error (%s):\n%s" % (err, response.text))
-        else:
-            json = dict(error=response.text)
-        return json
+    @with_response_type('Nothing')
+    def delete(self, key, start, end):
+        """Deletes data in a given series over the timeframe specified
+        by start and end.
 
-    def build_full_url(self, target, params={}):
-        default_port = {80: not self.secure, 443: self.secure}
-        port = "" if default_port.get(self.port, False) else ":%d" % self.port
-        protocol = "https://" if self.secure else "http://"
-        base_full_url = "%s%s%s" % (protocol, self.host, port)
-        return base_full_url + self.build_url(target, params)
+        :param string key: a list of keys for the series to use
+        :param start: the time to begin deleting from
+        :type start: ISO8601 string or Datetime object
+        :param end: the time to end deleting at
+        :type end: ISO8601 string or Datetime object
+        :rtype: :class:`tempodb.response.Response` object"""
 
-    def build_url(self, url, params={}):
-        if params:
-            return "/%s%s?%s" % (API_VERSION, url, self._urlencode(params))
-        else:
-            return "/%s%s" % (API_VERSION, url)
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'data')
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
 
-    def _urlencode(self, params):
-        p = []
-        for key, value in params.iteritems():
-            if isinstance(value, (list, tuple)):
-                for v in value:
-                    p.append((key, v))
-            elif isinstance(value, dict):
-                for k, v in value.items():
-                    p.append(('%s[%s]' % (key, k), v))
-            elif isinstance(value, bool):
-                p.append((key, str(value).lower()))
-            else:
-                p.append((key, str(value)))
-        return urllib.urlencode(p).encode("UTF-8")
+        params = {
+            'start': vstart,
+            'end': vend
+        }
 
-    def _normalize_params(self, ids=[], keys=[], tags=[], attributes={}):
-        params = {}
-        if ids:
-            params['id'] = ids
-        if keys:
-            params['key'] = keys
-        if tags:
-            params['tag'] = tags
-        if attributes:
-            params['attr'] = attributes
-        return params
-
-
-class TempoDBApiException(Exception):
-    pass
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.delete(url)
+        return resp

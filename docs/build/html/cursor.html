@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cursors &mdash; TempoDB Python API 1.0b documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0b',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TempoDB Python API 1.0b documentation" href="index.html" />
+    <link rel="next" title="Domain Objects" href="objects.html" />
+    <link rel="prev" title="Responses" href="response.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="objects.html" title="Domain Objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="response.html" title="Responses"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">TempoDB Python API 1.0b documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cursors">
+<h1>Cursors<a class="headerlink" href="#cursors" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-tempodb.protocol.cursor" title="tempodb.protocol.cursor"><tt class="xref py py-mod docutils literal"><span class="pre">tempodb.protocol.cursor</span></tt></a> module contaions functionality for working
+with database cursors.  Each <tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt> object is a standard Python
+iterable that represents a one-time use array of data from the TempoDB API
+(i.e. after you have iterated through a cursor, you must make another API call
+to read the data again):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cursor</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span>
+<span class="go">[DataPoint, DataPoint, ...]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data2</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cursor</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data2</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<span class="target" id="module-tempodb.protocol.cursor"></span><dl class="class">
+<dt id="tempodb.protocol.cursor.Cursor">
+<em class="property">class </em><tt class="descclassname">tempodb.protocol.cursor.</tt><tt class="descname">Cursor</tt><big>(</big><em>data</em>, <em>t</em>, <em>response</em><big>)</big><a class="reference internal" href="_modules/tempodb/protocol/cursor.html#Cursor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tempodb.protocol.cursor.Cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterable cursor over data retrieved from the TempoDB API.  The
+cursor will make network requests to fetch more data as needed, until
+the API returns no more data.  It can be used with the standard
+iterable interface:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cursor</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="tempodb.protocol.cursor.make_generator">
+<tt class="descclassname">tempodb.protocol.cursor.</tt><tt class="descname">make_generator</tt><big>(</big><em>d</em><big>)</big><a class="reference internal" href="_modules/tempodb/protocol/cursor.html#make_generator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tempodb.protocol.cursor.make_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8220;Utility function for converting a list to a generator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>d</strong> (<em>list</em>) &#8211; the list to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">generator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tempodb.protocol.cursor.parse_link_header">
+<tt class="descclassname">tempodb.protocol.cursor.</tt><tt class="descname">parse_link_header</tt><big>(</big><em>hdr</em><big>)</big><a class="reference internal" href="_modules/tempodb/protocol/cursor.html#parse_link_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tempodb.protocol.cursor.parse_link_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function for parsing the link header sent down by the
+TempoDB API when there is more paginated data to consume.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hdr</strong> (<em>string</em>) &#8211; the link header content</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="response.html"
+                        title="previous chapter">Responses</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="objects.html"
+                        title="next chapter">Domain Objects</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cursor.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="objects.html" title="Domain Objects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="response.html" title="Responses"
+             >previous</a> |</li>
+        <li><a href="index.html">TempoDB Python API 1.0b documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Aaron Brenzel.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

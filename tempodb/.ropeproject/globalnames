@@ -1,0 +1,7 @@
+€}q(Utempodb-read-demo]q(UendqU
+SERIES_KEYqU
+API_SECRETqUcursorqUstartqUclientqUAPI_KEYq	U	datapointq
+eUendpoint]q(UHTTPEndpointqUBASE_URLqUSERIES_ENDPOINTqUmake_url_argsqeUnew.endpoint]q(USTAGING_URLqUHTTPEndpointqUBASE_URLqUSERIES_ENDPOINTqUmake_url_argsqeUtemporal.validate]q(Ucheck_time_paramqUconvert_iso_stampqUISOqeUtests.test_protocol_objects]qUTestProtocolObjectsqaUprotocol.objects]q(U	SeriesSetqUSeriesqURollupqUDataSetq U	DataPointq!UJSONSerializableq"UNothingq#USummaryq$USingleValueq%eUclient]q&(Umake_series_urlq'UClientq(Uwith_response_typeq)eUtempodb-write-demo]q*(U
+SERIES_KEYq+Uminq,U
+API_SECRETq-Urespq.Uclientq/Udateq0UAPI_KEYq1Udataq2Udayq3eUprotocol.protocol]q4Umake_series_keyq5aUnew.response]q6UResponseq7aUprotocol.cursor]q8(USeriesCursorq9Ucheck_responseq:Umake_generatorq;UDataPointCursorq<UCursorq=eUresponse]q>(USUCCESSq?UFAILUREq@UPARTIALqAUResponseqBeU
+new.client]qC(UTEST_KEYqDUcUTEST_SECRETqEUClientqFUwith_response_typeqGeu.

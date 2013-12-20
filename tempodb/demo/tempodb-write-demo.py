@@ -4,12 +4,13 @@ http://tempo-db.com/api/write-series/#write-series-by-key
 
 import datetime
 import random
-from tempodb import Client, DataPoint
+from tempodb.client import Client
+from tempodb.protocol import DataPoint
 
 # Modify these with your credentials found at: http://tempo-db.com/manage/
-API_KEY = 'your-api-key'
-API_SECRET = 'your-api-secret'
-SERIES_KEY = 'your-custom-key'
+API_KEY = 'my-key'
+API_SECRET = 'my-secret'
+SERIES_KEY = 'stuff'
 
 client = Client(API_KEY, API_SECRET)
 
@@ -21,8 +22,12 @@ for day in range(1, 10):
 
     data = []
     # 1440 minutes in one day
-    for min in range (1, 1441):
-        data.append(DataPoint(date, random.random() * 50.0))
+    for min in range(1, 1441):
+        data.append(DataPoint.from_data(date, random.random() * 50.0))
         date = date + datetime.timedelta(minutes=1)
 
-    client.write_key(SERIES_KEY, data)
+    resp = client.write_data(SERIES_KEY, data)
+    print 'Response code:', resp.status
+
+    if resp.status != 200:
+        print 'Error reason:', resp.error
