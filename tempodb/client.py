@@ -67,7 +67,7 @@ class Client(object):
     READING DATA
 
         * :meth:`read_data`
-        * :meth:`read_multi`
+        * :meth:`aggregate_data`
 
     WRITING DATA
 
@@ -242,6 +242,53 @@ class Client(object):
                                      tz=data['tz'])
         return c
 
+    def aggregate_data(self, aggregation, keys=[], tags=[], attrs={},
+                       start=None, end=None, tz=None, limit=1000):
+        """Read data from multiple series according to a filter and apply a
+        function across all the returned series to put the datapoints together
+        into one aggregrate series.
+
+        See the :meth:`list_series` method for a description of how the filter
+        criteria are applied, and the :meth:`read_data` method for how to
+        work with the start, end, and tz parameters.
+
+        Valid aggregation functions are the same as valid fold functions.
+
+        :param key: (optional) filter by one or more series keys
+        :type key: list or string
+        :param tag: (optional) filter by one or more tags
+        :type tag: list or string
+        :param dict attr: (optional) filter by one or more key-value attributes
+        :param start: the start time for the data points
+        :type start: string or Datetime
+        :param end: the end time for the data points
+        :type end: string or Datetime
+        :param string tz: (optional) the timezone to place the data into
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
+
+        url = 'segment'
+
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
+        params = {
+            'start': vstart,
+            'end': vend,
+            'keys': keys,
+            'tags': tags,
+            'attributes': attrs,
+            'aggregation.fold': aggregation,
+            'tz': tz,
+            'limit': limit
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        r = Response(resp, self.session)
+        data = json.loads(r.resp.text)
+        c = protocol.DataPointCursor(data['data'], protocol.DataPoint, r,
+                                     tz=data['tz'])
+        return c
+
     #@with_response_type(['DataSet'])
     #def read_multi(self, key=None, start=None, end=None,
     #               function=None, interval=None, tz=None, tag=None,
@@ -266,9 +313,9 @@ class Client(object):
     #    :param string interval: (optional) downsampling rate for the data
     #    :param string tz: (optional) the timezone to place the data into
     #    :rtype: :class:`tempodb.response.Response` object"""
-#
+    #
     #    url = 'data'
-#
+    #
     #    vstart = check_time_param(start)
     #    vend = check_time_param(end)
     #    params = {

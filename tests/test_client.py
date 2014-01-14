@@ -120,6 +120,25 @@ class TestClient(unittest.TestCase):
         self.assertEquals(len([a for a in r]), 1)
         self.client.session.pool.get.assert_called_once()
 
+    def test_aggregate_data(self):
+        resp_data = DummyResponse()
+        resp_data.text = json.dumps({
+            "data": [{
+                "t": "2013-12-18T00:00:00",
+                "v": "bar",
+            }],
+            "tz": "UTC",
+            "aggregation": None
+        })
+        self.client.session.pool.get.return_value = resp_data
+        start = datetime.datetime.now()
+        end = datetime.datetime.now()
+        r = self.client.aggregate_data('sum', keys='foo', tags=['bar', 'baz'],
+                                       start=start, end=end)
+        self.assertEquals(r.response.status, 200)
+        self.assertEquals(len([a for a in r]), 1)
+        self.client.session.pool.get.assert_called_once()
+
     def test_write_data(self):
         test = [
             DataPoint.from_data(datetime.datetime.now(), 1.0),
