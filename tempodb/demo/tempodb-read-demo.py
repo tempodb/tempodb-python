@@ -16,7 +16,7 @@ start = datetime.date(2012, 1, 1)
 end = start + datetime.timedelta(days=1)
 
 cursor = client.read_data(SERIES_KEY, start, end)
-print 'Response code:', response.status
+print 'Response code:', cursor.response.status
 
 for datapoint in cursor:
     print datapoint.t.isoformat(), ':',  datapoint.v

@@ -37,5 +37,6 @@ def convert_iso_stamp(t, tz=None):
     dt = dateutil.parser.parse(t)
     if tz is not None:
         timezone = pytz.timezone(tz)
-        dt = timezone.localize(dt)
+        if dt.tzinfo is None:
+            dt = timezone.localize(dt)
     return dt
