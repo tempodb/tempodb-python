@@ -29,7 +29,7 @@ setup(
     author_email="dev@tempo-db.com",
     url="http://github.com/getsentry/tempodb-python/",
     description="A client for the TempoDB API",
-    packages=["tempodb", "tempodb.temporal", "tempodb.validate"],
+    packages=["tempodb", "tempodb.temporal", "tempodb.protocol"],
     long_description="A client for the TempoDB API.",
     dependency_links=[
     ],
