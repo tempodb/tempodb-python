@@ -19,6 +19,16 @@ class TestClient(unittest.TestCase):
         url = make_series_url(key)
         self.assertEquals(url, 'series/key/foo')
 
+    def test_make_series_url_with_colon(self):
+        key = 'foo:'
+        url = make_series_url(key)
+        self.assertEquals(url, 'series/key/foo%3A')
+
+    def test_make_series_url_with_period(self):
+        key = 'foo.'
+        url = make_series_url(key)
+        self.assertEquals(url, 'series/key/foo.')
+
     def test_client_constructor(self):
         self.assertEquals(self.client.session.base_url, BASE_URL)
 
