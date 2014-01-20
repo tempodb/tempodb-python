@@ -143,6 +143,7 @@ class Client(object):
         :rtype: :class:`tempodb.response.Response` object"""
 
         url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'segment')
         resp = self.session.get(url)
         return resp
 
