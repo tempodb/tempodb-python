@@ -135,7 +135,7 @@ class Client(object):
         resp = self.session.delete(url)
         return resp
 
-    @with_response_type('Series')
+    @with_response_type('SeriesCursor')
     def get_series(self, key):
         """Get a series object from TempoDB given its key.
 
