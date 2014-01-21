@@ -24,7 +24,7 @@ tests_require = [
 
 setup(
     name="tempodb",
-    version="1.0.0",
+    version="0.5.0",
     author="TempoDB Inc",
     author_email="dev@tempo-db.com",
     url="http://github.com/getsentry/tempodb-python/",

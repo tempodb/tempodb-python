@@ -16,7 +16,7 @@ def make_series_url(key):
     :rtype: string"""
 
     url = urlparse.urljoin(endpoint.SERIES_ENDPOINT, 'key/')
-    url = urlparse.urljoin(url, urllib.quote(key))
+    url = urlparse.urljoin(url, urllib.quote_plus(key))
     return url
 
 
@@ -88,8 +88,8 @@ class Client(object):
     :param string key: your API key
     :param string secret: your API secret"""
 
-    def __init__(self, key, secret, base_url=endpoint.BASE_URL, pool_maxsize=10, pool_block=False):
-        self.session = endpoint.HTTPEndpoint(key, secret, base_url, pool_maxsize, pool_block)
+    def __init__(self, key, secret, base_url=endpoint.BASE_URL):
+        self.session = endpoint.HTTPEndpoint(key, secret, base_url)
 
     #SERIES METHODS
     @with_response_type('Nothing')
@@ -296,7 +296,7 @@ class Client(object):
         return c
 
     def aggregate_data(self, aggregation, keys=[], tags=[], attrs={},
-                       start=None, end=None, tz=None, rollupfold=None, period=None, limit=1000):
+                       start=None, end=None, tz=None, limit=1000):
         """Read data from multiple series according to a filter and apply a
         function across all the returned series to put the datapoints together
         into one aggregrate series.
@@ -326,12 +326,10 @@ class Client(object):
         params = {
             'start': vstart,
             'end': vend,
-            'key': keys,
-            'tag': tags,
-            'attr': attrs,
+            'keys': keys,
+            'tags': tags,
+            'attributes': attrs,
             'aggregation.fold': aggregation,
-            'rollup.fold': rollupfold,
-            'rollup.period': period,
             'tz': tz,
             'limit': limit
         }
