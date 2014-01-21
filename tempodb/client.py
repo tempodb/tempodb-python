@@ -16,7 +16,7 @@ def make_series_url(key):
     :rtype: string"""
 
     url = urlparse.urljoin(endpoint.SERIES_ENDPOINT, 'key/')
-    url = urlparse.urljoin(url, urllib.quote(key))
+    url = urlparse.urljoin(url, urllib.quote_plus(key))
     return url
 
 
