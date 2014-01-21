@@ -41,7 +41,7 @@ class HTTPEndpoint(object):
     :param string secret: the API secret for the endpoint
     :param string base_url: the base URL for the endpoint"""
 
-    def __init__(self, key, secret, base_url=BASE_URL):
+    def __init__(self, key, secret, base_url=BASE_URL, pool_maxsize=10, pool_block=False):
         if base_url.endswith('/'):
             self.base_url = base_url
         else:
@@ -56,7 +56,7 @@ class HTTPEndpoint(object):
         self.auth = HTTPBasicAuth(key, secret)
         self.pool = requests.session()
         for p in ['http://', 'https://']:
-            adapter = requests.adapters.HTTPAdapter()
+            adapter = requests.adapters.HTTPAdapter(pool_maxsize=pool_maxconns, pool_block=pool_block)
             self.pool.mount(p, adapter)
 
     def post(self, url, body):
