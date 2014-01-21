@@ -68,6 +68,7 @@ class Client(object):
     READING DATA
 
         * :meth:`read_data`
+        * :meth:`find_data`
         * :meth:`aggregate_data`
 
     WRITING DATA
@@ -135,7 +136,7 @@ class Client(object):
         resp = self.session.delete(url)
         return resp
 
-    @with_response_type('SeriesCursor')
+    @with_response_type('Series')
     def get_series(self, key):
         """Get a series object from TempoDB given its key.
 
@@ -241,6 +242,56 @@ class Client(object):
         r = Response(resp, self.session)
         data = json.loads(r.resp.text)
         c = protocol.DataPointCursor(data['data'], protocol.DataPoint, r,
+                                     tz=data['tz'])
+        return c
+
+    def find_data(self, key, start, end, predicate, period, tz=None,
+                  limit=1000):
+        """Finds data from a given series according to a defined predicate
+        function.  Start and end times must be supplied.  They can either be
+        ISO8601 encoded strings (i.e. 2012-01-08T00:21:54.000+0000) or Python
+        Datetime objects, which will be converted for you.
+
+        The predicate and period must be supplied.  The period specifies
+        sub-intervals from start to end in which the search will be performed
+        (i.e. 1min will search over each minute within the interval).  The
+        predicate can be one of "max", "min", "first", or "last" and will
+        return the point over the given period that satisfies that predicate.
+
+        Finally, the optional tz parameter can be used to specify a time zone
+        for your output.  Please see
+        `here <https://tempo-db.com/docs/api/timezone/>`_ for a list of a
+        valid timezone values.
+
+        :param string key: the series key to use
+        :param start: the start time for the data points
+        :type start: string or Datetime
+        :param end: the end time for the data points
+        :type end: string or Datetime
+        :param string predicate: the name of a search function to use
+        :param string interval: downsampling rate for the data
+        :param string tz: (optional) the timezone to place the data into
+        :rtype: :class:`tempodb.protocol.cursor.DataPointFindCursor` object"""
+
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'find')
+
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
+        params = {
+            'start': vstart,
+            'end': vend,
+            'predicate.function': predicate,
+            'rollup.period': period,
+            'tz': tz,
+            'limit': limit
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        r = Response(resp, self.session)
+        data = json.loads(r.resp.text)
+        c = protocol.DataPointCursor(data['data'], protocol.DataPointFound, r,
                                      tz=data['tz'])
         return c
 

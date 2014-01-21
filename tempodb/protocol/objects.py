@@ -272,3 +272,43 @@ class DataPoint(JSONSerializable):
                     j[p] = getattr(self, p)
 
         return j
+
+
+class DataPointFound(JSONSerializable):
+    properties = ['interval', 't', 'v']
+
+    def __init__(self, json_text, response, tz=None):
+        self.tz = tz
+        super(DataPointFound, self).__init__(json_text, response)
+
+    def from_json(self, json_text):
+        """Deserialize a JSON object into this object.  This method will
+        check that the JSON object has the required keys and will set each
+        of the keys in that JSON object as an instance attribute of this
+        object.
+
+        :param json_text: the JSON text or object to deserialize from
+        :type json_text: dict or string
+        :raises ValueError: if the JSON object lacks an expected key
+        :rtype: None"""
+
+        if type(json_text) in [str, unicode]:
+            j = json.loads(json_text)
+        else:
+            j = json_text
+
+        try:
+            for p in self.properties:
+                if p == 'interval':
+                    self.start = convert_iso_stamp(j[p]['start'])
+                    self.end = convert_iso_stamp(j[p]['end'])
+                elif p == 't':
+                    val = convert_iso_stamp(j[p], self.tz)
+                    setattr(self, p, val)
+                else:
+                    setattr(self, p, j[p])
+        #overriding this exception allows us to handle optional values like
+        #id and key which are only present during particular API calls like
+        #multi writes
+        except KeyError:
+            pass
