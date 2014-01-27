@@ -6,11 +6,12 @@ import datetime
 from tempodb.client import Client
 
 # Modify these with your settings found at: http://tempo-db.com/manage/
+DATABASE_ID = 'my-id'
 API_KEY = 'my-key'
 API_SECRET = 'my-secret'
 SERIES_KEY = 'stuff'
 
-client = Client(API_KEY, API_SECRET)
+client = Client(DATABASE_ID, API_KEY, API_SECRET)
 
 start = datetime.date(2012, 1, 1)
 end = start + datetime.timedelta(days=1)

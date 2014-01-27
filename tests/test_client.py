@@ -11,7 +11,7 @@ from test_protocol_cursor import DummyResponse
 
 class TestClient(unittest.TestCase):
     def setUp(self):
-        self.client = Client('foo', 'bar')
+        self.client = Client('my_id', 'foo', 'bar')
         monkeypatch_requests(self.client.session)
 
     def test_make_series_url(self):

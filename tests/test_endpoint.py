@@ -5,7 +5,8 @@ from tempodb import endpoint as p
 
 class TestEndpoint(unittest.TestCase):
     def setUp(self):
-        self.end = p.HTTPEndpoint('foo', 'bar', 'http://www.nothing.com')
+        self.end = p.HTTPEndpoint('my_id', 'foo', 'bar',
+                                  'http://www.nothing.com')
         monkeypatch_requests(self.end)
 
     def test_make_url_args_list(self):
@@ -60,7 +61,8 @@ class TestEndpoint(unittest.TestCase):
         self.assertTrue(hasattr(self.end, 'auth'))
 
     def test_endpoint_constructor_with_slash(self):
-        self.end = p.HTTPEndpoint('foo', 'bar', 'http://www.nothing.com/')
+        self.end = p.HTTPEndpoint('my_id', 'foo', 'bar',
+                                  'http://www.nothing.com/')
         self.assertEquals(self.end.base_url, 'http://www.nothing.com/')
         self.assertEquals(self.end.headers['User-Agent'],
                           'tempo-db-python-test/%s' % 0.1)

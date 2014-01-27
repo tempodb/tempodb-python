@@ -41,7 +41,7 @@ class HTTPEndpoint(object):
     :param string secret: the API secret for the endpoint
     :param string base_url: the base URL for the endpoint"""
 
-    def __init__(self, key, secret, base_url=BASE_URL):
+    def __init__(self, database_id, key, secret, base_url=BASE_URL):
         if base_url.endswith('/'):
             self.base_url = base_url
         else:
@@ -49,6 +49,7 @@ class HTTPEndpoint(object):
             #slash so the urljoins will work properly
             self.base_url = base_url + '/'
 
+        self.database_id = database_id
         self.headers = {
             'User-Agent': 'tempo-db-python-test/%s' % 0.1,
             'Accept-Encoding': 'gzip'

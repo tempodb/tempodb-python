@@ -88,8 +88,10 @@ class Client(object):
     :param string key: your API key
     :param string secret: your API secret"""
 
-    def __init__(self, key, secret, base_url=endpoint.BASE_URL):
-        self.session = endpoint.HTTPEndpoint(key, secret, base_url)
+    def __init__(self, database_id, key, secret, base_url=endpoint.BASE_URL):
+        self.database_id = database_id
+        self.session = endpoint.HTTPEndpoint(database_id, key, secret,
+                                             base_url)
 
     #SERIES METHODS
     @with_response_type('Nothing')
