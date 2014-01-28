@@ -284,7 +284,7 @@ class Client(object):
             'start': vstart,
             'end': vend,
             'predicate.function': predicate,
-            'rollup.period': period,
+            'predicate.period': period,
             'tz': tz,
             'limit': limit
         }
