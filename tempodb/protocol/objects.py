@@ -299,7 +299,6 @@ class DataPointFound(JSONSerializable):
 
         try:
             for p in self.properties:
-                print p
                 if p == 'interval':
                     self.start = convert_iso_stamp(j[p]['start'])
                     self.end = convert_iso_stamp(j[p]['end'])
