@@ -199,7 +199,8 @@ class Client(object):
 
     #DATA READING METHODS
     def read_data(self, key, start=None, end=None, fold=None,
-                  period=None, tz=None, limit=1000):
+                  period=None, interpolationf=None, interpolation_period=None,
+                  tz=None, limit=1000):
         """Read data from a series given its ID or key.  Start and end times
         must be supplied.  They can either be ISO8601 encoded strings (i.e.
         2012-01-08T00:21:54.000+0000) or Python Datetime objects, which will
@@ -222,6 +223,9 @@ class Client(object):
         :type end: string or Datetime
         :param string fold: (optional) the name of a rollup function to use
         :param string period: (optional) downsampling rate for the data
+        :param string interpolationf: (optional) an interpolation function
+                                      to run over the series
+        :param string interpolation_period: the period to interpolate data into
         :param string tz: (optional) the timezone to place the data into
         :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
 
@@ -235,6 +239,8 @@ class Client(object):
             'end': vend,
             'rollup.fold': fold,
             'rollup.period': period,
+            'interpolation.function': interpolationf,
+            'interpolation.period': interpolation_period,
             'tz': tz,
             'limit': limit
         }
@@ -298,7 +304,8 @@ class Client(object):
         return c
 
     def aggregate_data(self, aggregation, keys=[], tags=[], attrs={},
-                       start=None, end=None, fold=None, interval=None,
+                       start=None, end=None, fold=None, period=None,
+                       interpolationf=None, interpolation_period=None,
                        tz=None, limit=1000):
         """Read data from multiple series according to a filter and apply a
         function across all the returned series to put the datapoints together
@@ -310,6 +317,7 @@ class Client(object):
 
         Valid aggregation functions are the same as valid fold functions.
 
+        :param string aggregation: the aggregation to perform
         :param key: (optional) filter by one or more series keys
         :type key: list or string
         :param tag: (optional) filter by one or more tags
@@ -321,6 +329,9 @@ class Client(object):
         :type end: string or Datetime
         :param string fold: (optional) the name of a rollup function to use
         :param string period: (optional) downsampling rate for the data
+        :param string interpolationf: (optional) an interpolation function
+                                      to run over the series
+        :param string interpolation_period: the period to interpolate data into
         :param string tz: (optional) the timezone to place the data into
         :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
 
@@ -336,7 +347,9 @@ class Client(object):
             'attributes': attrs,
             'aggregation.fold': aggregation,
             'rollup.fold': fold,
-            'rollup.period': interval,
+            'rollup.period': period,
+            'interpolation.function': interpolationf,
+            'interpolation.period': interpolation_period,
             'tz': tz,
             'limit': limit
         }
