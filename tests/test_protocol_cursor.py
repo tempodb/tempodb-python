@@ -29,7 +29,7 @@ class DummyResponse(object):
 
 class TestCursor(unittest.TestCase):
     def test_cursor_constructor(self):
-        c = Cursor([1, 2, 3], DummyType, None)
+        c = Cursor({'data': [1, 2, 3]}, DummyType, None)
         self.assertEquals(c.type, DummyType)
         self.assertEquals(c.response, None)
 
@@ -46,7 +46,7 @@ class TestCursor(unittest.TestCase):
         secondary_response.resp.links = {}
         resp.session.get.return_value = secondary_response
         resp.resp.links = {'next': {'url': '<...>'}}
-        c = DataPointCursor([1, 2, 3], DummyType, resp)
+        c = DataPointCursor({'data': [1, 2, 3]}, DummyType, resp)
         d = [i for i in c]
         resp.session.get.assert_called_once_with('<...>')
         self.assertEquals(len(d), 6)
@@ -60,7 +60,7 @@ class TestCursor(unittest.TestCase):
         secondary_response.resp.links = {}
         resp.session.get.return_value = secondary_response
         resp.resp.links = {'next': {'url': 'foo'}}
-        c = DataPointCursor([1, 2, 3], DummyType, resp)
+        c = DataPointCursor({'data': [1, 2, 3]}, DummyType, resp)
         got_value_error = False
         try:
             [i for i in c]

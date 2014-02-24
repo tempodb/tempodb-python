@@ -1,4 +1,5 @@
 import json
+from tempodb.temporal.validate import convert_iso_stamp
 
 
 def make_generator(d):
@@ -58,8 +59,11 @@ class DataPointCursor(Cursor):
         self.response = response
         self.type = t
         self.tz = tz
+        self.rollup = data.get('rollup')
+        self.start = convert_iso_stamp(data.get('start'))
+        self.end = convert_iso_stamp(data.get('end'))
         self.data = make_generator(
-            [self.type(d, self.response, tz=tz) for d in data])
+            [self.type(d, self.response, tz=tz) for d in data['data']])
 
     def _fetch_next(self):
         try:

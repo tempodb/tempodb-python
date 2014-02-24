@@ -2,7 +2,7 @@ import unittest
 import datetime
 import json
 from tempodb.protocol.objects import JSONSerializable
-from tempodb.protocol.objects import DataPoint
+from tempodb.protocol.objects import DataPoint, MultiPoint
 
 
 class TestProtocolObjects(unittest.TestCase):
@@ -135,3 +135,18 @@ class TestProtocolObjects(unittest.TestCase):
         self.assertEquals(j['v'], 1.0)
         self.assertEquals(j['key'], 'foo')
         self.assertEquals(j['id'], 'bar')
+
+    def test_multi_point_with_tz(self):
+        d = {'t': '2013-12-18T00:00:00', 'v': {'foo': 1.0, 'bar': 3.0}}
+        mp = MultiPoint(d, None, tz='US/Eastern')
+        self.assertEquals(mp.t.isoformat(), '2013-12-18T00:00:00-05:00')
+
+    def test_multi_point_get_valid_key(self):
+        d = {'t': '2013-12-18T00:00:00', 'v': {'foo': 1.0, 'bar': 3.0}}
+        mp = MultiPoint(d, None, tz='US/Eastern')
+        self.assertEquals(mp.get('foo'), 1.0)
+
+    def test_multi_point_get_invalid_key(self):
+        d = {'t': '2013-12-18T00:00:00', 'v': {'foo': 1.0, 'bar': 3.0}}
+        mp = MultiPoint(d, None, tz='US/Eastern')
+        self.assertEquals(mp.get('baz'), None)

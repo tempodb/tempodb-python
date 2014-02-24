@@ -50,6 +50,35 @@ class with_response_type(object):
         return wrapper
 
 
+class with_cursor(object):
+    """Decorator class for automatically transforming a response into a
+    Cursor of the required type.
+
+    :param class cursor_type: the cursor class to use
+    :param class data_type: the data type that cursor should generate"""
+
+    def __init__(self, cursor_type, data_type):
+        self.cursor_type = cursor_type
+        self.data_type = data_type
+
+    def __call__(self, f, *args, **kwargs):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            resp = f(*args, **kwargs)
+            session = args[0].session
+            resp_obj = Response(resp, session)
+            if resp_obj.status == 200:
+                data = json.loads(resp_obj.body)
+                if self.cursor_type is protocol.SeriesCursor:
+                    return self.cursor_type(data, self.data_type, resp_obj)
+                else:
+                    return self.cursor_type(data, self.data_type, resp_obj,
+                                            kwargs.get('tz'))
+            raise ValueError("Request returned code %s: %s" % (resp_obj.status,
+                                                               resp_obj.body))
+        return wrapper
+
+
 class Client(object):
     """Entry point class into the TempoDB API.  The client should be
     initialized with your API key and secret obtained from your TempoDB
@@ -70,6 +99,7 @@ class Client(object):
         * :meth:`read_data`
         * :meth:`find_data`
         * :meth:`aggregate_data`
+        * :meth:`read_multi`
 
     WRITING DATA
 
@@ -143,13 +173,14 @@ class Client(object):
         """Get a series object from TempoDB given its key.
 
         :param string key: a string name for the series
-        :rtype: :class:`tempodb.response.Response` object"""
+        :rtype: :class:`tempodb.protocol.Series` object"""
 
         url = make_series_url(key)
         url = urlparse.urljoin(url + '/', 'segment')
         resp = self.session.get(url)
         return resp
 
+    @with_cursor(protocol.SeriesCursor, protocol.Series)
     def list_series(self, key=None, tag=None, attr=None,
                     limit=1000):
         """Get a list of all series matching the given criteria.
@@ -174,10 +205,7 @@ class Client(object):
         url_args = endpoint.make_url_args(params)
         url = '?'.join([endpoint.SERIES_ENDPOINT, url_args])
         resp = self.session.get(url)
-        r = Response(resp, self.session)
-        data = json.loads(r.resp.text)
-        c = protocol.SeriesCursor(data, protocol.Series, r)
-        return c
+        return resp
 
     @with_response_type('Series')
     def update_series(self, series):
@@ -198,6 +226,7 @@ class Client(object):
         return resp
 
     #DATA READING METHODS
+    @with_cursor(protocol.DataPointCursor, protocol.DataPoint)
     def read_data(self, key, start=None, end=None, fold=None,
                   period=None, interpolationf=None, interpolation_period=None,
                   tz=None, limit=1000):
@@ -247,12 +276,9 @@ class Client(object):
         url_args = endpoint.make_url_args(params)
         url = '?'.join([url, url_args])
         resp = self.session.get(url)
-        r = Response(resp, self.session)
-        data = json.loads(r.resp.text)
-        c = protocol.DataPointCursor(data['data'], protocol.DataPoint, r,
-                                     tz=data['tz'])
-        return c
+        return resp
 
+    @with_cursor(protocol.DataPointCursor, protocol.DataPointFound)
     def find_data(self, key, start, end, predicate, period, tz=None,
                   limit=1000):
         """Finds data from a given series according to a defined predicate
@@ -297,12 +323,9 @@ class Client(object):
         url_args = endpoint.make_url_args(params)
         url = '?'.join([url, url_args])
         resp = self.session.get(url)
-        r = Response(resp, self.session)
-        data = json.loads(r.resp.text)
-        c = protocol.DataPointCursor(data['data'], protocol.DataPointFound, r,
-                                     tz=data['tz'])
-        return c
+        return resp
 
+    @with_cursor(protocol.DataPointCursor, protocol.DataPoint)
     def aggregate_data(self, aggregation, keys=[], tags=[], attrs={},
                        start=None, end=None, fold=None, period=None,
                        interpolationf=None, interpolation_period=None,
@@ -356,55 +379,54 @@ class Client(object):
         url_args = endpoint.make_url_args(params)
         url = '?'.join([url, url_args])
         resp = self.session.get(url)
-        r = Response(resp, self.session)
-        data = json.loads(r.resp.text)
-        c = protocol.DataPointCursor(data['data'], protocol.DataPoint, r,
-                                     tz=data['tz'])
-        return c
+        return resp
 
-    #@with_response_type(['DataSet'])
-    #def read_multi(self, key=None, start=None, end=None,
-    #               function=None, interval=None, tz=None, tag=None,
-    #               attr=None):
-    #    """Read data from multiple series given filter criteria.  See the
-    #    :meth:`list_series` method for a description of how the filter
-    #    criteria are applied, and the :meth:`read_data` method for how to
-    #    work with the start, end, function, interval, and tz parameters.
-    #
-    #    :param series_id: (optional) filter by one or more series IDs
-    #    :type series_id: list or string
-    #    :param key: (optional) filter by one or more series keys
-    #    :type key: list or string
-    #    :param tag: filter by one or more tags
-    #    :type tag: list or string
-    #    :param dict attr: (optional) filter by one or more key-value attributes
-    #    :param start: the start time for the data points
-    #    :type start: string or Datetime
-    #    :param end: the end time for the data points
-    #    :type end: string or Datetime
-    #    :param string function: (optional) the name of a rollup function to use
-    #    :param string interval: (optional) downsampling rate for the data
-    #    :param string tz: (optional) the timezone to place the data into
-    #    :rtype: :class:`tempodb.response.Response` object"""
-    #
-    #    url = 'data'
-    #
-    #    vstart = check_time_param(start)
-    #    vend = check_time_param(end)
-    #    params = {
-    #        'key': key,
-    #        'tag': tag,
-    #        'attr': attr,
-    #        'start': vstart,
-    #        'end': vend,
-    #        'function': function,
-    #        'interval': interval,
-    #        'tz': tz
-    #    }
-    #    url_args = endpoint.make_url_args(params)
-    #    url = '?'.join([url, url_args])
-    #    resp = self.session.get(url)
-    #    return resp
+    @with_cursor(protocol.DataPointCursor, protocol.MultiPoint)
+    def read_multi(self, start, end, key=None, fold=None, period=None, tz=None,
+                   tag=None, attr=None, interpolationf=None,
+                   interpolation_period=None, limit=5000):
+        """Read data from multiple series given filter criteria.  See the
+        :meth:`list_series` method for a description of how the filter
+        criteria are applied, and the :meth:`read_data` method for how to
+        work with the start, end, function, interval, and tz parameters.
+
+        :param series_id: (optional) filter by one or more series IDs
+        :type series_id: list or string
+        :param key: (optional) filter by one or more series keys
+        :type key: list or string
+        :param tag: filter by one or more tags
+        :type tag: list or string
+        :param dict attr: (optional) filter by one or more key-value attributes
+        :param start: the start time for the data points
+        :type start: string or Datetime
+        :param end: the end time for the data points
+        :type end: string or Datetime
+        :param string function: (optional) the name of a rollup function to use
+        :param string interval: (optional) downsampling rate for the data
+        :param string tz: (optional) the timezone to place the data into
+        :rtype: :class:`tempodb.response.Response` object"""
+
+        url = 'segment'
+
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
+        params = {
+            'keys': key,
+            'tags': tag,
+            'attributes': attr,
+            'start': vstart,
+            'end': vend,
+            'limit': limit,
+            'rollup.fold': fold,
+            'rollup.period': period,
+            'interpolation.function': interpolationf,
+            'interpolation.period': interpolation_period,
+            'tz': tz
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        return resp
 
     #WRITE DATA METHODS
     @with_response_type('Nothing')

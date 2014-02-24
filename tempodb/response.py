@@ -47,6 +47,7 @@ class Response(object):
             self.successful = FAILURE
             self.error = self.resp.text
 
+        self.body = self.resp.text
         self.data = None
 
     def _cast_payload(self, t):

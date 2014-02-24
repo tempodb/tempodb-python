@@ -34,6 +34,9 @@ def convert_iso_stamp(t, tz=None):
     :param string t: the timestamp to convert
     :rtype: Datetime object"""
 
+    if t is None:
+        return None
+
     dt = dateutil.parser.parse(t)
     if tz is not None:
         timezone = pytz.timezone(tz)

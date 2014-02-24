@@ -174,6 +174,24 @@ class TestClient(unittest.TestCase):
         self.assertEquals(len([a for a in r]), 1)
         self.client.session.pool.get.assert_called_once()
 
+    def test_read_multi(self):
+        resp_data = DummyResponse()
+        resp_data.text = json.dumps({
+            "data": [
+                {"t": "2013-12-18T00:00:00", "v": {"foo": 1.0, "bar": 3.0}},
+                {"t": "2013-12-19T00:00:00", "v": {"bar": 2.0}},
+            ],
+            "tz": "UTC",
+            "rollup": None
+        })
+        self.client.session.pool.get.return_value = resp_data
+        start = datetime.datetime.now()
+        end = datetime.datetime.now()
+        r = self.client.read_multi(start, end)
+        self.assertEquals(r.response.status, 200)
+        self.assertEquals(len([a for a in r]), 2)
+        self.client.session.pool.get.assert_called_once()
+
     def test_write_data(self):
         test = [
             DataPoint.from_data(datetime.datetime.now(), 1.0),
