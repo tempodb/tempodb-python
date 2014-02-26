@@ -5,9 +5,7 @@ tempodb/client.py
 
 Copyright (c) 2012 TempoDB, Inc. All rights reserved.
 """
-
-import simplejson
-from dateutil import parser
+from datetime import datetime
 
 
 class Database(object):
@@ -33,7 +31,7 @@ class Series(object):
         return str(self.__dict__)
 
     def __eq__(self, other):
-       return self.__dict__ == other.__dict__
+        return self.__dict__ == other.__dict__
 
     @staticmethod
     def from_json(json):
@@ -56,7 +54,7 @@ class DataPoint(object):
         return "t: %s, v: %s" % (self.ts, self.value)
 
     def __eq__(self, other):
-       return self.__dict__ == other.__dict__
+        return self.__dict__ == other.__dict__
 
     def to_json(self):
         json = {
@@ -67,7 +65,7 @@ class DataPoint(object):
 
     @staticmethod
     def from_json(json):
-        ts = parser.parse(json.get('t', ''))
+        ts = datetime.strptime(json.get('t', ''), "%Y-%m-%dT%H:%M:%S.%fZ")
         value = json.get('v', None)
         dp = DataPoint(ts, value)
         return dp
@@ -86,14 +84,14 @@ class DataSet(object):
         return str(self.__dict__)
 
     def __eq__(self, other):
-       return self.__dict__ == other.__dict__
+        return self.__dict__ == other.__dict__
 
     @staticmethod
     def from_json(json):
         series = Series.from_json(json.get('series', {}))
 
-        start_date = parser.parse(json.get('start', ''))
-        end_date = parser.parse(json.get('end', ''))
+        start_date = datetime.strptime(json.get('start', ''), "%Y-%m-%dT%H:%M:%S.%fZ")
+        end_date = datetime.strptime(json.get('end', ''), "%Y-%m-%dT%H:%M:%S.%fZ")
 
         data = [DataPoint.from_json(dp) for dp in json.get("data", [])]
         summary = Summary.from_json(json.get('summary', {})) if 'summary' in json else None
