@@ -133,9 +133,9 @@ class ClientTest(TestCase):
                 "tags": [],
                 "attributes": {}
             },
-            "start": "2012-03-27T00:00:00.000",
-            "end": "2012-03-28T00:00:00.000",
-            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "start": "2012-03-27T00:00:00.000Z",
+            "end": "2012-03-28T00:00:00.000Z",
+            "data": [{"t": "2012-03-27T00:00:00.000Z", "v": 12.34}],
             "summary": {}
         }""")
 
@@ -160,9 +160,9 @@ class ClientTest(TestCase):
                 "tags": [],
                 "attributes": {}
             },
-            "start": "2012-03-27T00:00:00.000",
-            "end": "2012-03-28T00:00:00.000",
-            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "start": "2012-03-27T00:00:00.000Z",
+            "end": "2012-03-28T00:00:00.000Z",
+            "data": [{"t": "2012-03-27T00:00:00.000Z", "v": 12.34}],
             "summary": {}
         }""")
 
@@ -187,9 +187,9 @@ class ClientTest(TestCase):
                 "tags": [],
                 "attributes": {}
             },
-            "start": "2012-03-27T00:00:00.000",
-            "end": "2012-03-28T00:00:00.000",
-            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "start": "2012-03-27T00:00:00.000Z",
+            "end": "2012-03-28T00:00:00.000Z",
+            "data": [{"t": "2012-03-27T00:00:00.000Z", "v": 12.34}],
             "summary": {}
         }""")
 
@@ -214,9 +214,9 @@ class ClientTest(TestCase):
                 "tags": [],
                 "attributes": {}
             },
-            "start": "2012-03-27T00:00:00.000",
-            "end": "2012-03-28T00:00:00.000",
-            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "start": "2012-03-27T00:00:00.000Z",
+            "end": "2012-03-28T00:00:00.000Z",
+            "data": [{"t": "2012-03-27T00:00:00.000Z", "v": 12.34}],
             "summary": {}
         }]""")
 
@@ -401,7 +401,7 @@ class ClientTest(TestCase):
         self.client.session.post.assert_called_once_with(
             'https://example.com/v1/multi/',
             auth=('key', 'secret'),
-            data= simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
+            data=simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
             headers=self.post_headers
         )
         self.assertEqual(result, '')
@@ -425,7 +425,7 @@ class ClientTest(TestCase):
         self.client.session.post.assert_called_once_with(
             'https://example.com/v1/multi/',
             auth=('key', 'secret'),
-            data= simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
+            data=simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
             headers=self.post_headers
         )
 
@@ -444,7 +444,7 @@ class ClientTest(TestCase):
         self.client.session.post.assert_called_once_with(
             'https://example.com/v1/multi/',
             auth=('key', 'secret'),
-            data= simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
+            data=simplejson.dumps(data, default=tempodb.DATETIME_HANDLER),
             headers=self.post_headers
         )
         self.assertEqual(result, '')
