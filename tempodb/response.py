@@ -47,6 +47,7 @@ class Response(object):
             self.successful = FAILURE
             self.error = self.resp.text
 
+        self.resp.encoding = "UTF-8"
         self.body = self.resp.text
         self.data = None
 
