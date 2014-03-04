@@ -107,6 +107,19 @@ class Series(JSONSerializable):
 
     properties = ['key', 'name', 'tags', 'attributes']
 
+    def __init__(self, json_text, response):
+        #the formatting of the series object returned from the series by key
+        #endpoint is slightly different
+        if type(json_text) == str:
+            j = json.loads(json_text)
+        else:
+            j = json_text
+        if 'series' in j:
+            self.from_json(j['series'])
+        else:
+            self.from_json(json_text)
+        self.response = response
+
 
 class DataSet(JSONSerializable):
     """Represents a data set returned using the /data resource in the
