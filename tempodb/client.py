@@ -115,7 +115,8 @@ class Client(object):
         * :meth:`single_value`
         * :meth:`multi_series_single_value`
 
-    :param string key: your API key
+    :param string database_id: 32-character identifier for your database
+    :param string key: your API key, currently the same as database_id
     :param string secret: your API secret"""
 
     def __init__(self, database_id, key, secret, base_url=endpoint.BASE_URL):

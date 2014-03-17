@@ -11,10 +11,11 @@ To set up a client, simply use your API key and secret::
     from tempodb.client import Client
 
 
-    API_KEY = 'my key'
+    DATABASE_ID = 'my database'
+    API_KEY = DATABASE_ID
     API_SECRET = 'my secret'
 
-    client = Client(API_KEY, API_SECRET)
+    client = Client(DATABASE_ID, API_KEY, API_SECRET)
 
 Creating a series
 -----------------

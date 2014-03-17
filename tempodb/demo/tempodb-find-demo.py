@@ -7,7 +7,7 @@ from tempodb.client import Client
 
 # Modify these with your settings found at: http://tempo-db.com/manage/
 DATABASE_ID = 'my-id'
-API_KEY = 'my-key'
+API_KEY = DATABASE_ID
 API_SECRET = 'my-secret'
 SERIES_KEY = 'stuff'
 
