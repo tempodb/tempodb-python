@@ -107,6 +107,19 @@ class Series(JSONSerializable):
 
     properties = ['key', 'name', 'tags', 'attributes']
 
+    def __init__(self, json_text, response):
+        #the formatting of the series object returned from the series by key
+        #endpoint is slightly different
+        if type(json_text) == str:
+            j = json.loads(json_text)
+        else:
+            j = json_text
+        if 'series' in j:
+            self.from_json(j['series'])
+        else:
+            self.from_json(json_text)
+        self.response = response
+
 
 class DataSet(JSONSerializable):
     """Represents a data set returned using the /data resource in the
@@ -275,7 +288,7 @@ class DataPoint(JSONSerializable):
 
 
 class DataPointFound(JSONSerializable):
-    properties = ['interval', 'found']
+    properties = ['interval', 't', 'v']
 
     def __init__(self, json_text, response, tz=None):
         self.tz = tz
@@ -302,10 +315,11 @@ class DataPointFound(JSONSerializable):
                 if p == 'interval':
                     self.start = convert_iso_stamp(j[p]['start'])
                     self.end = convert_iso_stamp(j[p]['end'])
-                elif p == 'found':
-                    t = convert_iso_stamp(j[p]['t'], self.tz)
-                    v = j[p]['v']
+                elif p == 't':
+                    t = convert_iso_stamp(j[p], self.tz)
                     setattr(self, 't', t)
+                elif p == 'v':
+                    v = j[p]
                     setattr(self, 'v', v)
         #overriding this exception allows us to handle optional values like
         #id and key which are only present during particular API calls like

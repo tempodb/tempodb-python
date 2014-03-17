@@ -171,7 +171,9 @@ class TestClient(unittest.TestCase):
         end = datetime.datetime.now()
         r = self.client.find_data('foo', start, end, 'max', '1min')
         self.assertEquals(r.response.status, 200)
-        self.assertEquals(len([a for a in r]), 1)
+        objs = [a for a in r]
+        self.assertEquals(len(objs), 1)
+        self.assertEquals(objs[0].v, 'bar')
         self.client.session.pool.get.assert_called_once()
 
     def test_read_multi(self):

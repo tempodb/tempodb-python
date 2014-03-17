@@ -354,7 +354,8 @@ class Client(object):
         :param string period: (optional) downsampling rate for the data
         :param string interpolationf: (optional) an interpolation function
                                       to run over the series
-        :param string interpolation_period: the period to interpolate data into
+        :param string interpolation_period: (optional) the period to
+                                            interpolate data into
         :param string tz: (optional) the timezone to place the data into
         :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
 
@@ -401,12 +402,16 @@ class Client(object):
         :type start: string or Datetime
         :param end: the end time for the data points
         :type end: string or Datetime
-        :param string function: (optional) the name of a rollup function to use
-        :param string interval: (optional) downsampling rate for the data
+        :param string fold: (optional) the name of a rollup function to use
+        :param string period: (optional) downsampling rate for the data
         :param string tz: (optional) the timezone to place the data into
+        :param string interpolationf: (optional) an interpolation function
+                                      to run over the series
+        :param string interpolation_period: (optional) the period to
+                                            interpolate data into
         :rtype: :class:`tempodb.response.Response` object"""
 
-        url = 'segment'
+        url = 'multi'
 
         vstart = check_time_param(start)
         vend = check_time_param(end)
