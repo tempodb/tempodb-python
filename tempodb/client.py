@@ -341,11 +341,12 @@ class Client(object):
         Valid aggregation functions are the same as valid fold functions.
 
         :param string aggregation: the aggregation to perform
-        :param key: (optional) filter by one or more series keys
-        :type key: list or string
-        :param tag: (optional) filter by one or more tags
-        :type tag: list or string
-        :param dict attr: (optional) filter by one or more key-value attributes
+        :param keys: (optional) filter by one or more series keys
+        :type keys: list or string
+        :param tags: (optional) filter by one or more tags
+        :type tags: list or string
+        :param dict attrs: (optional) filter by one or more key-value
+                           attributes
         :param start: the start time for the data points
         :type start: string or Datetime
         :param end: the end time for the data points
@@ -366,9 +367,9 @@ class Client(object):
         params = {
             'start': vstart,
             'end': vend,
-            'keys': keys,
-            'tags': tags,
-            'attributes': attrs,
+            'key': keys,
+            'tag': tags,
+            'attr': attrs,
             'aggregation.fold': aggregation,
             'rollup.fold': fold,
             'rollup.period': period,
@@ -383,8 +384,8 @@ class Client(object):
         return resp
 
     @with_cursor(protocol.DataPointCursor, protocol.MultiPoint)
-    def read_multi(self, start, end, key=None, fold=None, period=None, tz=None,
-                   tag=None, attr=None, interpolationf=None,
+    def read_multi(self, start, end, keys=None, fold=None, period=None,
+                   tz=None, tags=None, attrs=None, interpolationf=None,
                    interpolation_period=None, limit=5000):
         """Read data from multiple series given filter criteria.  See the
         :meth:`list_series` method for a description of how the filter
@@ -393,8 +394,8 @@ class Client(object):
 
         :param series_id: (optional) filter by one or more series IDs
         :type series_id: list or string
-        :param key: (optional) filter by one or more series keys
-        :type key: list or string
+        :param keys: (optional) filter by one or more series keys
+        :type keys: list or string
         :param tag: filter by one or more tags
         :type tag: list or string
         :param dict attr: (optional) filter by one or more key-value attributes
@@ -416,9 +417,9 @@ class Client(object):
         vstart = check_time_param(start)
         vend = check_time_param(end)
         params = {
-            'keys': key,
-            'tags': tag,
-            'attributes': attr,
+            'key': keys,
+            'tag': tags,
+            'attr': attrs,
             'start': vstart,
             'end': vend,
             'limit': limit,
