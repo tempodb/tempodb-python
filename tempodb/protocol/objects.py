@@ -364,6 +364,26 @@ class MultiPoint(JSONSerializable):
         except KeyError:
             pass
 
+    def to_json(self):
+        """Serialize an object to JSON based on its "properties" class
+        attribute.
+
+        :rtype: string"""
+
+        j = {}
+        for p in self.properties:
+            try:
+                v = getattr(self, p)
+            except AttributeError:
+                continue
+            if v is not None:
+                if p == 't':
+                    j[p] = getattr(self, p).isoformat()
+                else:
+                    j[p] = getattr(self, p)
+
+        return json.dumps(j)
+
     def get(self, k):
         """Convenience method for getting values for individual series out of
         the MultiPoint.  This is equivalent to calling::
