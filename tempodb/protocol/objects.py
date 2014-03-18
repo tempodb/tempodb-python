@@ -110,7 +110,7 @@ class Series(JSONSerializable):
     def __init__(self, json_text, response):
         #the formatting of the series object returned from the series by key
         #endpoint is slightly different
-        if type(json_text) == str:
+        if isinstance(json_text, basestring):
             j = json.loads(json_text)
         else:
             j = json_text
