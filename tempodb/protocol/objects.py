@@ -288,7 +288,7 @@ class DataPoint(JSONSerializable):
 
 
 class DataPointFound(JSONSerializable):
-    properties = ['interval', 't', 'v']
+    properties = ['interval', 'found']
 
     def __init__(self, json_text, response, tz=None):
         self.tz = tz
@@ -315,11 +315,10 @@ class DataPointFound(JSONSerializable):
                 if p == 'interval':
                     self.start = convert_iso_stamp(j[p]['start'])
                     self.end = convert_iso_stamp(j[p]['end'])
-                elif p == 't':
-                    t = convert_iso_stamp(j[p], self.tz)
+                elif p == 'found':
+                    t = convert_iso_stamp(j[p]['t'], self.tz)
                     setattr(self, 't', t)
-                elif p == 'v':
-                    v = j[p]
+                    v = j[p]['v']
                     setattr(self, 'v', v)
         #overriding this exception allows us to handle optional values like
         #id and key which are only present during particular API calls like
