@@ -157,8 +157,10 @@ class TestClient(unittest.TestCase):
                     "start": "2013-12-18T00:00:00",
                     "end": "2013-12-18T00:00:00",
                 },
-                "t": "2013-12-18T00:00:00",
-                "v": "bar",
+                "found": {
+                    "t": "2013-12-18T00:00:00",
+                    "v": "bar",
+                }
             }],
             "tz": "UTC",
             "predicate": {
