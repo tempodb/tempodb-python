@@ -103,7 +103,14 @@ class SeriesSet(object):
 class Series(JSONSerializable):
     """Represents a Series object from the TempoDB API.  Series objects
     are serialized to and from JSON using the :meth:`to_json` and
-    :meth:`from_json` methods."""
+    :meth:`from_json` methods.
+
+    Domain object attributes:
+
+        * key: string
+        * name: string
+        * tags: list
+        * attributes: dictionary"""
 
     properties = ['key', 'name', 'tags', 'attributes']
 
@@ -139,7 +146,12 @@ class DataSet(JSONSerializable):
 class SingleValue(JSONSerializable):
     """Represents a data set returned by calling the single value
     endpoint of the TempoDB API.  This domain object is not cursored, so
-    it is implemented separately from the more generic DataSet object."""
+    it is implemented separately from the more generic DataSet object.
+
+    Domain object attributes:
+
+        * series: :class:`Series` object
+        * data: :class:`DataPoint` object"""
 
     properties = ['series', 'data']
 
@@ -169,7 +181,14 @@ class Rollup(JSONSerializable):
 
 class DataPoint(JSONSerializable):
     """Represents a single data point in a series.  To construct these objects
-    in user code, use the class method :meth:`from_data`."""
+    in user code, use the class method :meth:`from_data`.
+
+    Domain object attributes:
+
+        * t: DateTime object
+        * v: int or float
+        * key: string (only present when writing DataPoints)
+        * id: string (only present when writing DataPoints)"""
 
     properties = ['t', 'v', 'key', 'id']
 
@@ -288,6 +307,19 @@ class DataPoint(JSONSerializable):
 
 
 class DataPointFound(JSONSerializable):
+    """Represents a specialized DataPoint returned by the the /find endpoint
+    of the TempoDB API.  The start and end attributes indicate in what time
+    period the datapoint was found, the t attribute indicates the exact time
+    at which the point was found, and the v attribute indicates what the value
+    of the point was at that time.
+
+    Domain object attributes:
+
+        * start: DateTime object
+        * end: DateTime object
+        * v: int or long
+        * t: DateTime object"""
+
     properties = ['interval', 'found']
 
     def __init__(self, json_text, response, tz=None):
@@ -349,7 +381,14 @@ class DataPointFound(JSONSerializable):
 
 class MultiPoint(JSONSerializable):
     """Represents a data point with values for multiple series at a single
-    timestamp. Returned when performing a multi-series query."""
+    timestamp. Returned when performing a multi-series query.  The v attribute
+    is a dictionary mapping series key to value.
+
+    Domain object attributes:
+
+        * t: DateTime object
+        * v: dictionary"""
+
     properties = ['t', 'v']
 
     def __init__(self, json_text, response, tz=None):
