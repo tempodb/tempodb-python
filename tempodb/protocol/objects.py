@@ -163,6 +163,25 @@ class SingleValue(JSONSerializable):
         if self.data is not None:
             self.data = DataPoint(self.data, response)
 
+    def to_dictionary(self):
+        """Serialize an object into dictionary form.  Useful if you have to
+        serialize an array of objects into JSON.  Otherwise, if you call the
+        :meth:`to_json` method on each object in the list and then try to
+        dump the array, you end up with an array with one string."""
+
+        j = {}
+        j['series'] = self.series.to_dictionary()
+        j['data'] = self.data.to_dictionary()
+        return j
+
+    def to_json(self):
+        """Serialize an object to JSON based on its "properties" class
+        attribute.
+
+        :rtype: string"""
+
+        return json.dumps(self.to_dictionary())
+
 
 class Summary(JSONSerializable):
     """Represents the summary received from the TempoDB API when a data read

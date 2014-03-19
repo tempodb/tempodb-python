@@ -3,6 +3,7 @@ import datetime
 import json
 from tempodb.protocol.objects import JSONSerializable
 from tempodb.protocol.objects import DataPoint, MultiPoint, DataPointFound
+from tempodb.protocol.objects import SingleValue
 
 
 class TestProtocolObjects(unittest.TestCase):
@@ -180,3 +181,72 @@ class TestProtocolObjects(unittest.TestCase):
         d = {'t': '2013-12-18T00:00:00', 'v': {'foo': 1.0, 'bar': 3.0}}
         mp = MultiPoint(d, None, tz='US/Eastern')
         self.assertEquals(mp.get('baz'), None)
+
+    def test_single_value(self):
+        d = {"data": {
+                "t": "2013-12-31T23:00:00.000Z",
+                "v": 35.8872769971233
+            },
+            "series": {
+                "attributes": {
+                    "project": "perftest1"
+                },
+                "id": "fake",
+                "key": "foo",
+                "name": "",
+                "tags": [
+                    "subset"
+                ]
+            }
+        }
+        sv = SingleValue(d, None)
+        self.assertEquals(sv.data.t.month, 12)
+        self.assertEquals(sv.series.key, 'foo')
+
+    def test_single_value_to_dictionary(self):
+        d = {"data": {
+                "t": "2013-12-31T23:00:00.000Z",
+                "v": 35.8872769971233
+            },
+            "series": {
+                "attributes": {
+                    "project": "perftest1"
+                },
+                "id": "fake",
+                "key": "foo",
+                "name": "",
+                "tags": [
+                    "subset"
+                ]
+            }
+        }
+        sv = SingleValue(d, None)
+        j = sv.to_dictionary()
+        self.assertEquals(j['data']['t'], '2013-12-31T23:00:00+00:00')
+        self.assertEquals(j['series']['key'], 'foo')
+
+    def test_single_value_to_json(self):
+        d = {"data": {
+                "t": "2013-12-31T23:00:00.000Z",
+                "v": 35.8872769971233
+            },
+            "series": {
+                "attributes": {
+                    "project": "perftest1"
+                },
+                "id": "fake",
+                "key": "foo",
+                "name": "",
+                "tags": [
+                    "subset"
+                ]
+            }
+        }
+        sv = SingleValue(d, None)
+        j = sv.to_json()
+        dj = json.loads(j)
+        #these are serialized differently or not at all
+        del d['series']['id']
+        d['data']['t'] = '2013-12-31T23:00:00+00:00'
+        d1 = json.loads(json.dumps(d))
+        self.assertDictEqual(dj, d1)
