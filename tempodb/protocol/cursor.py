@@ -34,7 +34,7 @@ class Cursor(object):
     the API returns no more data.  It can be used with the standard
     iterable interface:
 
-        >>> data = [d for d in response.data.cursor]"""
+        >>> data = [d for d in response.data]"""
 
     def __init__(self, data, t, response):
         self.response = response
@@ -55,6 +55,8 @@ class Cursor(object):
 
 
 class DataPointCursor(Cursor):
+    """An iterable cursor over a collection of DataPoint objects."""
+
     def __init__(self, data, t, response, tz=None):
         self.response = response
         self.type = t
@@ -83,6 +85,8 @@ class DataPointCursor(Cursor):
 
 
 class SeriesCursor(Cursor):
+    """An iterable cursor over a collection of Series objects"""
+
     def _fetch_next(self):
         try:
             link = self.response.resp.links['next']['url']

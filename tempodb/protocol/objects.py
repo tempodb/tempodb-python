@@ -328,6 +328,8 @@ class DataPointFound(JSONSerializable):
 
 
 class MultiPoint(JSONSerializable):
+    """Represents a data point with values for multiple series at a single
+    timestamp. Returned when performing a multi-series query."""
     properties = ['t', 'v']
 
     def __init__(self, json_text, response, tz=None):
