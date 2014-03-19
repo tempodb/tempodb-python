@@ -313,8 +313,8 @@ class DataPointFound(JSONSerializable):
         try:
             for p in self.properties:
                 if p == 'interval':
-                    self.start = convert_iso_stamp(j[p]['start'])
-                    self.end = convert_iso_stamp(j[p]['end'])
+                    self.start = convert_iso_stamp(j[p]['start'], self.tz)
+                    self.end = convert_iso_stamp(j[p]['end'], self.tz)
                 elif p == 'found':
                     t = convert_iso_stamp(j[p]['t'], self.tz)
                     setattr(self, 't', t)
@@ -325,6 +325,26 @@ class DataPointFound(JSONSerializable):
         #multi writes
         except KeyError:
             pass
+
+    def to_dictionary(self):
+        """Serialize an object into dictionary form.  Useful if you have to
+        serialize an array of objects into JSON.  Otherwise, if you call the
+        :meth:`to_json` method on each object in the list and then try to
+        dump the array, you end up with an array with one string."""
+
+        j = {}
+        j['interval'] = {'start': self.start.isoformat(),
+                         'end': self.end.isoformat()}
+        j['found'] = {'v': self.v, 't': self.t.isoformat()}
+        return j
+
+    def to_json(self):
+        """Serialize an object to JSON based on its "properties" class
+        attribute.
+
+        :rtype: string"""
+
+        return json.dumps(self.to_dictionary())
 
 
 class MultiPoint(JSONSerializable):
