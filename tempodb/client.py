@@ -141,7 +141,7 @@ class Client(object):
         return resp
 
     @with_response_type('Nothing')
-    def delete_series(self, key=None, tag=None, attr=None,
+    def delete_series(self, key=None, tags=None, attrs=None,
                       allow_truncation=False):
         """Delete a series according to the given criteria.
 
@@ -160,8 +160,8 @@ class Client(object):
 
         params = {
             'key': key,
-            'tag': tag,
-            'attr': attr,
+            'tag': tags,
+            'attr': attrs,
             'allow_truncation': str(allow_truncation).lower()
         }
         url_args = endpoint.make_url_args(params)
@@ -182,7 +182,7 @@ class Client(object):
         return resp
 
     @with_cursor(protocol.SeriesCursor, protocol.Series)
-    def list_series(self, key=None, tag=None, attr=None,
+    def list_series(self, key=None, tags=None, attrs=None,
                     limit=1000):
         """Get a list of all series matching the given criteria.
 
@@ -201,8 +201,8 @@ class Client(object):
 
         params = {
             'key': key,
-            'tag': tag,
-            'attr': attr,
+            'tag': tags,
+            'attr': attrs,
             'limit': limit
         }
         url_args = endpoint.make_url_args(params)
@@ -564,7 +564,7 @@ class Client(object):
 
     @with_response_type(['SingleValue'])
     def multi_series_single_value(self, key=None, ts=None, direction=None,
-                                  attr={}, tag=[]):
+                                  attrs={}, tags=[]):
         """Return a single value for multiple series.  You can supply a
         timestamp as the ts argument, otherwise the search defaults to the
         current time.
@@ -594,8 +594,8 @@ class Client(object):
 
         params = {
             'key': key,
-            'tag': tag,
-            'attr': attr,
+            'tag': tags,
+            'attr': attrs,
             'ts': vts,
             'direction': direction
         }

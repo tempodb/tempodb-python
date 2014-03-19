@@ -2,7 +2,7 @@ import unittest
 import datetime
 import json
 from tempodb.protocol.objects import JSONSerializable
-from tempodb.protocol.objects import DataPoint, MultiPoint
+from tempodb.protocol.objects import DataPoint, MultiPoint, DataPointFound
 
 
 class TestProtocolObjects(unittest.TestCase):
@@ -135,6 +135,36 @@ class TestProtocolObjects(unittest.TestCase):
         self.assertEquals(j['v'], 1.0)
         self.assertEquals(j['key'], 'foo')
         self.assertEquals(j['id'], 'bar')
+
+    def test_data_point_found_to_dictionary(self):
+        d = {'found': {'t': '2013-12-18T00:00:00', 'v': 1.0},
+             'interval': {'start': '2013-12-01T00:00:00',
+                          'end': '2013-12-31T23:59:59'}}
+        d = DataPointFound(d, None)
+        j = d.to_dictionary()
+        self.assertEquals(j['found']['t'], '2013-12-18T00:00:00')
+        self.assertEquals(j['found']['v'], 1.0)
+        self.assertEquals(j['interval']['start'], '2013-12-01T00:00:00')
+        self.assertEquals(j['interval']['end'], '2013-12-31T23:59:59')
+
+    def test_data_point_found_to_dictionary_with_tz(self):
+        d = {'found': {'t': '2013-12-18T00:00:00', 'v': 1.0},
+             'interval': {'start': '2013-12-01T00:00:00',
+                          'end': '2013-12-31T23:59:59'}}
+        d = DataPointFound(d, None, tz='US/Eastern')
+        j = d.to_dictionary()
+        self.assertEquals(j['found']['t'], '2013-12-18T00:00:00-05:00')
+        self.assertEquals(j['found']['v'], 1.0)
+        self.assertEquals(j['interval']['start'], '2013-12-01T00:00:00-05:00')
+        self.assertEquals(j['interval']['end'], '2013-12-31T23:59:59-05:00')
+
+    def test_data_point_found_to_json(self):
+        d = {'found': {'t': '2013-12-18T00:00:00', 'v': 1.0},
+             'interval': {'start': '2013-12-01T00:00:00',
+                          'end': '2013-12-31T23:59:59'}}
+        df = DataPointFound(d, None)
+        j = df.to_json()
+        self.assertEquals(j, json.dumps(d))
 
     def test_multi_point_with_tz(self):
         d = {'t': '2013-12-18T00:00:00', 'v': {'foo': 1.0, 'bar': 3.0}}

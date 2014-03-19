@@ -59,8 +59,8 @@ class TestClient(unittest.TestCase):
         }
         url_args = make_url_args(params)
         url = '?'.join([p.SERIES_ENDPOINT, url_args])
-        self.client.delete_series(key='bar', tag=['baz'],
-                                  attr={'abc': 'def'})
+        self.client.delete_series(key='bar', tags=['baz'],
+                                  attrs={'abc': 'def'})
         self.client.session.pool.delete.assert_called_once_with(
             BASE_URL + url,
             auth=self.client.session.auth
@@ -157,8 +157,10 @@ class TestClient(unittest.TestCase):
                     "start": "2013-12-18T00:00:00",
                     "end": "2013-12-18T00:00:00",
                 },
-                "t": "2013-12-18T00:00:00",
-                "v": "bar",
+                "found": {
+                    "t": "2013-12-18T00:00:00",
+                    "v": "bar",
+                }
             }],
             "tz": "UTC",
             "predicate": {
