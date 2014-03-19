@@ -110,7 +110,7 @@ class Series(JSONSerializable):
     def __init__(self, json_text, response):
         #the formatting of the series object returned from the series by key
         #endpoint is slightly different
-        if type(json_text) == str:
+        if isinstance(json_text, basestring):
             j = json.loads(json_text)
         else:
             j = json_text
@@ -328,6 +328,8 @@ class DataPointFound(JSONSerializable):
 
 
 class MultiPoint(JSONSerializable):
+    """Represents a data point with values for multiple series at a single
+    timestamp. Returned when performing a multi-series query."""
     properties = ['t', 'v']
 
     def __init__(self, json_text, response, tz=None):

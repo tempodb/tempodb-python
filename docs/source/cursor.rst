@@ -7,10 +7,10 @@ iterable that represents a one-time use array of data from the TempoDB API
 (i.e. after you have iterated through a cursor, you must make another API call 
 to read the data again)::
 
-  >>> data = [d for d in response.data.cursor]
+  >>> data = [d for d in response.data]
   >>> data
   [DataPoint, DataPoint, ...]
-  >>> data2 = [d for d in response.data.cursor]
+  >>> data2 = [d for d in response.data]
   >>> data2
   []
 

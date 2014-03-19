@@ -115,7 +115,8 @@ class Client(object):
         * :meth:`single_value`
         * :meth:`multi_series_single_value`
 
-    :param string key: your API key
+    :param string database_id: 32-character identifier for your database
+    :param string key: your API key, currently the same as database_id
     :param string secret: your API secret"""
 
     def __init__(self, database_id, key, secret, base_url=endpoint.BASE_URL):
@@ -176,7 +177,6 @@ class Client(object):
         :rtype: :class:`tempodb.protocol.Series` object"""
 
         url = make_series_url(key)
-        url = urlparse.urljoin(url + '/', 'segment')
         resp = self.session.get(url)
         return resp
 
@@ -235,10 +235,16 @@ class Client(object):
         2012-01-08T00:21:54.000+0000) or Python Datetime objects, which will
         be converted for you.
 
-        The function parameter is optional and can include string values such
+        The fold parameter is optional and can include string values such
         as "sum" and "avg".  This will apply a folding function to your
-        rollup of data.  The optional interval parameter will downsample your
+        rollup of data.  The optional period parameter will downsample your
         data according to the given resolution ("1min", "2day", etc).
+
+        The optional interpolation parameters can be used to resample your
+        data to a regular interval interpolation_period according to an
+        interpolation function interpolationf. Valid values for
+        interpolation_period are the same as for the period parameter, and
+        valid values for interpolationf include "zoh" and "linear".
 
         Finally, the optional tz parameter can be used to specify a time zone
         for your output.  Please see
@@ -254,7 +260,7 @@ class Client(object):
         :param string period: (optional) downsampling rate for the data
         :param string interpolationf: (optional) an interpolation function
                                       to run over the series
-        :param string interpolation_period: the period to interpolate data into
+        :param string interpolation_period: (optional) the period to interpolate data into
         :param string tz: (optional) the timezone to place the data into
         :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
 
@@ -303,7 +309,7 @@ class Client(object):
         :param end: the end time for the data points
         :type end: string or Datetime
         :param string predicate: the name of a search function to use
-        :param string interval: downsampling rate for the data
+        :param string period: downsampling rate for the data
         :param string tz: (optional) the timezone to place the data into
         :rtype: :class:`tempodb.protocol.cursor.DataPointFindCursor` object"""
 

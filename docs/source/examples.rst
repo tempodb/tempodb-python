@@ -6,15 +6,16 @@ Below are some examples to help you get started using the API.
 Setting up a client
 -------------------
 
-To set up a client, simply use your API key and secret::
+To set up a client, simply use your database ID, API key, and secret::
 
     from tempodb.client import Client
 
 
-    API_KEY = 'my key'
+    DATABASE_ID = 'my database'
+    API_KEY = DATABASE_ID    # Currently API_KEY is the same as DATABASE_ID
     API_SECRET = 'my secret'
 
-    client = Client(API_KEY, API_SECRET)
+    client = Client(DATABASE_ID, API_KEY, API_SECRET)
 
 Creating a series
 -----------------
@@ -58,6 +59,7 @@ Writing to one series::
     for minute in range(1, 1441):
 
         dp = DataPoint.from_data(date, random.random() * 100.0)
+        data.append(dp)
         date = date + datetime.timedelta(minutes=1)
     
     client.write_data(series, data)
@@ -70,6 +72,7 @@ Writing to multiple series::
         #argument to tell the API which series the data point belongs to
         dp = DataPoint.from_data(date, random.random() * 100.0,
                                  key=random.choice(series))
+        data.append(dp)
         date = date + datetime.timedelta(minutes=1)
     
     client.write_multi(series, data)
@@ -84,7 +87,7 @@ straightforward::
     end = start + datetime.timedelta(days=1)
     response = client.read_data('my-series', start, end)
 
-    for d in response.data.cursor:
+    for d in response.data:
         # do something
 
 Note that your actual data points are stored in a cursor.  This cursor will 
