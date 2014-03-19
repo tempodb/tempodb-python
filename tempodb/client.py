@@ -174,7 +174,8 @@ class Client(object):
         """Get a series object from TempoDB given its key.
 
         :param string key: a string name for the series
-        :rtype: :class:`tempodb.response.Response` with a :class:`tempodb.protocol.Series` data payload"""
+        :rtype: :class:`tempodb.response.Response` with a
+                :class:`tempodb.protocol.objects.Series` data payload"""
 
         url = make_series_url(key)
         resp = self.session.get(url)
@@ -194,7 +195,9 @@ class Client(object):
         :param tag: filter by one or more tags
         :type tag: list or string
         :param dict attr: filter by one or more key-value attributes
-        :rtype: :class:`tempodb.protocol.cursor.SeriesCursor` object"""
+        :rtype: :class:`tempodb.protocol.cursor.SeriesCursor` with an
+                iterator over :class:`tempodb.protocol.objects.Series`
+                objects"""
 
         params = {
             'key': key,
@@ -217,7 +220,8 @@ class Client(object):
 
         :param series: the series to update
         :type series: `tempodb.protocol.Series` object
-        :rtype: :class:`tempodb.response.Response` object"""
+        :rtype: :class:`tempodb.response.Response` object with the updated
+                :class:`tempodb.protocol.objects.Series` as the data payload"""
 
         url = make_series_url(series.key)
 
@@ -261,7 +265,8 @@ class Client(object):
                                       to run over the series
         :param string interpolation_period: (optional) the period to interpolate data into
         :param string tz: (optional) the timezone to place the data into
-        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an iterator
+                over :class:`tempodb.protocol.objects.DataPoint` objects"""
 
         url = make_series_url(key)
         url = urlparse.urljoin(url + '/', 'segment')
@@ -310,7 +315,9 @@ class Client(object):
         :param string predicate: the name of a search function to use
         :param string period: downsampling rate for the data
         :param string tz: (optional) the timezone to place the data into
-        :rtype: :class:`tempodb.protocol.cursor.DataPointFindCursor` object"""
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an
+                iterator over :class:`tempodb.protocol.objects.DataPointFound`
+                objects."""
 
         url = make_series_url(key)
         url = urlparse.urljoin(url + '/', 'find')
@@ -363,7 +370,9 @@ class Client(object):
         :param string interpolation_period: (optional) the period to
                                             interpolate data into
         :param string tz: (optional) the timezone to place the data into
-        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` object"""
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an
+                iterator over :class:`tempodb.protocol.objects.DataPoint`
+                objects"""
 
         url = 'segment'
 
@@ -415,7 +424,9 @@ class Client(object):
                                       to run over the series
         :param string interpolation_period: (optional) the period to
                                             interpolate data into
-        :rtype: :class:`tempodb.response.Response` object"""
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an
+                iterator over :class:`tempodb.protocol.objects.MultiPoint`
+                objects"""
 
         url = 'multi'
 
@@ -522,14 +533,16 @@ class Client(object):
         as the ts argument, otherwise the search defaults to the current
         time.
 
-        The dire`ction argument can be one of "exact", "before", "after", or
+        The direction argument can be one of "exact", "before", "after", or
         "nearest".
 
         :param string key: the key for the series to use
         :param ts: (optional) the time to begin searching from
         :type ts: ISO8601 string or Datetime object
         :param string direction: criterion for the search
-        :rtype: :class:`tempodb.response.Response` object"""
+        :rtype: :class:`tempodb.response.Response` with a
+                :class:`tempodb.protocol.objects.SingleValue` object as the
+                data payload"""
 
         url = make_series_url(key)
         url = urlparse.urljoin(url + '/', 'single')
@@ -569,7 +582,9 @@ class Client(object):
         :param tag: filter by one or more tags
         :type tag: list or string
         :param dict attr: filter by one or more key-value attributes
-        :rtype: :class:`tempodb.response.Response` object"""
+        :rtype: :class:`tempodb.response.Response` with a list of
+                :class:`tempodb.protocol.objects.SingleValue` objects as the
+                data payload"""
 
         url = 'single/'
         if ts is not None:
