@@ -174,7 +174,7 @@ class Client(object):
         """Get a series object from TempoDB given its key.
 
         :param string key: a string name for the series
-        :rtype: :class:`tempodb.protocol.Series` object"""
+        :rtype: :class:`tempodb.response.Response` with a :class:`tempodb.protocol.Series` data payload"""
 
         url = make_series_url(key)
         resp = self.session.get(url)
@@ -219,8 +219,7 @@ class Client(object):
         :type series: `tempodb.protocol.Series` object
         :rtype: :class:`tempodb.response.Response` object"""
 
-        url = urlparse.urljoin(endpoint.SERIES_ENDPOINT, 'key/')
-        url = urlparse.urljoin(url, series.key)
+        url = make_series_url(series.key)
 
         resp = self.session.put(url, series.to_json())
         return resp
