@@ -4,7 +4,7 @@ import urllib
 import json
 import endpoint
 import protocol
-from response import Response
+from response import Response, ResponseException
 from temporal.validate import check_time_param
 
 
@@ -46,6 +46,8 @@ class with_response_type(object):
             resp_obj = Response(resp, session)
             if resp_obj.status == 200:
                 resp_obj._cast_payload(self.t)
+            else:
+                raise ResponseException(resp_obj)
             return resp_obj
         return wrapper
 
@@ -263,10 +265,12 @@ class Client(object):
         :param string period: (optional) downsampling rate for the data
         :param string interpolationf: (optional) an interpolation function
                                       to run over the series
-        :param string interpolation_period: (optional) the period to interpolate data into
+        :param string interpolation_period: (optional) the period to
+                                            interpolate data into
         :param string tz: (optional) the timezone to place the data into
-        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an iterator
-                over :class:`tempodb.protocol.objects.DataPoint` objects"""
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an
+                iterator over :class:`tempodb.protocol.objects.DataPoint`
+                objects"""
 
         url = make_series_url(key)
         url = urlparse.urljoin(url + '/', 'segment')

@@ -7,6 +7,20 @@ FAILURE = 1
 PARTIAL = 2
 
 
+class ResponseException(Exception):
+    """Exception class for HTTP responses"""
+
+    def __init__(self, response):
+        self.response = response
+        self.msg = 'TempoDB response returned status: %d' % response.status
+
+    def __repr__(self):
+        return self.msg
+
+    def __str__(self):
+        return self.msg
+
+
 class Response(object):
     """Represents responses from the TempoDB API.  The Response object has
     several useful attributes after it is created:
