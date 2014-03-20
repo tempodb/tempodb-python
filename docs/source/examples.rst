@@ -88,11 +88,16 @@ straightforward::
     response = client.read_data('my-series', start, end)
 
     for d in response.data:
-        # do something
+        print d.t, d.v
+
+Reading from multiple series::
+
+    response = client.read_multi(keys=['series1', 'series2'], start, end)
+    
+    for d in response.data:
+        print d.t, d.get('series1'), d.get('series2')
 
 Note that your actual data points are stored in a cursor.  This cursor will 
 automatically handle the API's pagination until it reaches the end of the data 
 you request.  It is also "read once."  After you have iterated through a 
 cursor, accessing the data again will require another API call.
-
-
