@@ -9,7 +9,7 @@ from temporal.validate import check_time_param
 
 
 def make_series_url(key):
-    """Given a series key, generate a valid URL to the series endpoint for
+    """For internal use. Given a series key, generate a valid URL to the series endpoint for
     that key.
 
     :param string key: the series key
@@ -21,7 +21,7 @@ def make_series_url(key):
 
 
 class with_response_type(object):
-    """Decorator for ensuring the Response object returned by the
+    """For internal use. Decorator for ensuring the Response object returned by the
     :class:`Client` object has a data attribute that corresponds to the
     object type expected from the TempoDB API.  This class should not be
     used by user code.
@@ -51,7 +51,7 @@ class with_response_type(object):
 
 
 class with_cursor(object):
-    """Decorator class for automatically transforming a response into a
+    """For internal use. Decorator class for automatically transforming a response into a
     Cursor of the required type.
 
     :param class cursor_type: the cursor class to use
@@ -141,7 +141,7 @@ class Client(object):
         return resp
 
     @with_response_type('Nothing')
-    def delete_series(self, key=None, tags=None, attrs=None,
+    def delete_series(self, keys=None, tags=None, attrs=None,
                       allow_truncation=False):
         """Delete a series according to the given criteria.
 
@@ -149,17 +149,17 @@ class Client(object):
         those values.  For the tag and attr arguments, the filter will return
         the *intersection* of those values.
 
-        :param key: filter by one or more series keys
-        :type key: list or string
-        :param tag: filter by one or more tags
-        :type tag: list or string
-        :param dict attr: filter by one or more key-value attributes
+        :param keys: filter by one or more series keys
+        :type keys: list or string
+        :param tags: filter by one or more tags
+        :type tags: list or string
+        :param dict attrs: filter by one or more key-value attributes
         :param bool allow_truncation: whether to allow full deletion of a
-                                      database
+                                      database. Default is False.
         :rtype: :class:`tempodb.response.Response` object"""
 
         params = {
-            'key': key,
+            'key': keys,
             'tag': tags,
             'attr': attrs,
             'allow_truncation': str(allow_truncation).lower()
@@ -182,7 +182,7 @@ class Client(object):
         return resp
 
     @with_cursor(protocol.SeriesCursor, protocol.Series)
-    def list_series(self, key=None, tags=None, attrs=None,
+    def list_series(self, keys=None, tags=None, attrs=None,
                     limit=1000):
         """Get a list of all series matching the given criteria.
 
@@ -190,17 +190,17 @@ class Client(object):
         those values.  For the tag and attr arguments, the filter will return
         the *intersection* of those values.
 
-        :param key: filter by one or more series keys
-        :type key: list or string
-        :param tag: filter by one or more tags
-        :type tag: list or string
-        :param dict attr: filter by one or more key-value attributes
+        :param keys: filter by one or more series keys
+        :type keys: list or string
+        :param tags: filter by one or more tags
+        :type tags: list or string
+        :param dict attrs: filter by one or more key-value attributes
         :rtype: :class:`tempodb.protocol.cursor.SeriesCursor` with an
                 iterator over :class:`tempodb.protocol.objects.Series`
                 objects"""
 
         params = {
-            'key': key,
+            'key': keys,
             'tag': tags,
             'attr': attrs,
             'limit': limit
@@ -406,13 +406,11 @@ class Client(object):
         criteria are applied, and the :meth:`read_data` method for how to
         work with the start, end, function, interval, and tz parameters.
 
-        :param series_id: (optional) filter by one or more series IDs
-        :type series_id: list or string
         :param keys: (optional) filter by one or more series keys
         :type keys: list or string
-        :param tag: filter by one or more tags
-        :type tag: list or string
-        :param dict attr: (optional) filter by one or more key-value attributes
+        :param tags: filter by one or more tags
+        :type tags: list or string
+        :param dict attrs: (optional) filter by one or more key-value attributes
         :param start: the start time for the data points
         :type start: string or Datetime
         :param end: the end time for the data points
@@ -507,14 +505,14 @@ class Client(object):
     #def increment(self, key, data=[]):
     #    """Increment a series a data points by the specified amount.  For
     #    instance, incrementing with the following data::
-#
+    #
     #        data = [{"t": "2012-01-08T00:21:54.000+0000", "v": 4.164}]
-#
+    #
     #    would increment the value at that time by 4.
-#
+    #
     #    **Note:** all floating point values are converted to longs before
     #    the increment takes place.
-#
+    #
     #    :param string key: the series whose value to increment
     #    :param list data: the data points to incrememnt
     #    :rtype: :class:`tempodb.response.Response` object"""
@@ -563,7 +561,7 @@ class Client(object):
         return resp
 
     @with_response_type(['SingleValue'])
-    def multi_series_single_value(self, key=None, ts=None, direction=None,
+    def multi_series_single_value(self, keys=None, ts=None, direction=None,
                                   attrs={}, tags=[]):
         """Return a single value for multiple series.  You can supply a
         timestamp as the ts argument, otherwise the search defaults to the
@@ -575,13 +573,13 @@ class Client(object):
         The id, key, tag, and attr arguments allow you to filter for series.
         See the :meth:`list_series` method for an explanation of their use.
 
-        :param string key: (optional) a list of keys for the series to use
+        :param string keys: (optional) a list of keys for the series to use
         :param ts: (optional) the time to begin searching from
         :type ts: ISO8601 string or Datetime object
         :param string direction: criterion for the search
-        :param tag: filter by one or more tags
-        :type tag: list or string
-        :param dict attr: filter by one or more key-value attributes
+        :param tags: filter by one or more tags
+        :type tags: list or string
+        :param dict attrs: filter by one or more key-value attributes
         :rtype: :class:`tempodb.response.Response` with a list of
                 :class:`tempodb.protocol.objects.SingleValue` objects as the
                 data payload"""
@@ -593,7 +591,7 @@ class Client(object):
             vts = None
 
         params = {
-            'key': key,
+            'key': keys,
             'tag': tags,
             'attr': attrs,
             'ts': vts,
