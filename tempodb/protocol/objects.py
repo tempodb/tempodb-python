@@ -183,12 +183,70 @@ class SingleValue(JSONSerializable):
         return json.dumps(self.to_dictionary())
 
 
+class SeriesSummary(JSONSerializable):
+    properties = ['series', 'summary', 'tz', 'start', 'end']
+
+    def __init__(self, json_text, response, tz=None):
+        self.tz = tz
+        super(SeriesSummary, self).__init__(json_text, response)
+        self.series = Series(self.series, response)
+        self.summary = Summary(self.summary, response)
+
+    def from_json(self, json_text):
+        """Deserialize a JSON object into this object.  This method will
+        check that the JSON object has the required keys and will set each
+        of the keys in that JSON object as an instance attribute of this
+        object.
+
+        :param json_text: the JSON text or object to deserialize from
+        :type json_text: dict or string
+        :raises ValueError: if the JSON object lacks an expected key
+        :rtype: None"""
+
+        if type(json_text) in [str, unicode]:
+            j = json.loads(json_text)
+        else:
+            j = json_text
+
+        try:
+            for p in self.properties:
+                if p in ['start', 'end']:
+                    val = convert_iso_stamp(j[p], self.tz)
+                    setattr(self, p, val)
+                else:
+                    setattr(self, p, j[p])
+        except KeyError:
+            pass
+
+    def to_json(self):
+        """Serialize an object to JSON based on its "properties" class
+        attribute.
+
+        :rtype: string"""
+
+        return json.dumps(self.to_dictionary())
+
+    def to_dictionary(self):
+        """Serialize an object into dictionary form.  Useful if you have to
+        serialize an array of objects into JSON.  Otherwise, if you call the
+        :meth:`to_json` method on each object in the list and then try to
+        dump the array, you end up with an array with one string."""
+
+        d = {'start': self.start.isoformat(),
+             'end': self.end.isoformat(),
+             'tz': self.tz,
+             'summary': self.summary.to_dictionary(),
+             'series': self.series.to_dictionary()
+             }
+        return d
+
+
 class Summary(JSONSerializable):
     """Represents the summary received from the TempoDB API when a data read
     request is sent.  The properties are summary statistics for the dataset
     returned."""
 
-    properties = ['mean', 'sum', 'min', 'max', 'stddev', 'ss', 'count']
+    properties = ['mean', 'sum', 'min', 'max', 'stddev', 'count']
 
 
 class Rollup(JSONSerializable):

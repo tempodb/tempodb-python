@@ -292,6 +292,23 @@ class Client(object):
         resp = self.session.get(url)
         return resp
 
+    @with_response_type('SeriesSummary')
+    def get_summary(self, key, start, end, tz=None):
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'summary')
+
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
+        params = {
+            'start': vstart,
+            'end': vend,
+            'tz': tz
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        return resp
+
     @with_cursor(protocol.DataPointCursor, protocol.MultiPoint)
     def read_multi_rollups(self, key, start, end, folds, period,
                            tz=None, interpolationf=None,
