@@ -3,7 +3,7 @@ import datetime
 import json
 from tempodb.protocol.objects import JSONSerializable
 from tempodb.protocol.objects import DataPoint, MultiPoint, DataPointFound
-from tempodb.protocol.objects import SingleValue
+from tempodb.protocol.objects import SingleValue, SeriesSummary
 
 
 class TestProtocolObjects(unittest.TestCase):
@@ -250,3 +250,75 @@ class TestProtocolObjects(unittest.TestCase):
         d['data']['t'] = '2013-12-31T23:00:00+00:00'
         d1 = json.loads(json.dumps(d))
         self.assertDictEqual(dj, d1)
+
+    def test_series_summary(self):
+        d = {"series":
+                {"id": "foo",
+                 "key": "stuff",
+                 "name": "",
+                 "tags": [],
+                 "attributes": {}},
+             "tz": "UTC",
+             "end": "2012-01-02T00:00:00.000Z",
+             "start": "2012-01-01T00:00:00.000Z",
+             "summary":
+                {"count": 1440,
+                 "mean": 24.81055812507774,
+                 "min": 0.05106735242182414,
+                 "max": 49.96047239524747,
+                 "stddev": 14.518747713268956,
+                 "sum": 35727.203700111946}
+             }
+        ss = SeriesSummary(d, None)
+        self.assertEquals(ss.series.key, 'stuff')
+        self.assertEquals(ss.summary.count, 1440)
+
+    def test_series_summary_to_dictionary(self):
+        d = {"series":
+                {"id": "foo",
+                 "key": "stuff",
+                 "name": "",
+                 "tags": [],
+                 "attributes": {}},
+             "tz": "UTC",
+             "end": "2012-01-02T00:00:00.000Z",
+             "start": "2012-01-01T00:00:00.000Z",
+             "summary":
+                {"count": 1440,
+                 "mean": 24.81055812507774,
+                 "min": 0.05106735242182414,
+                 "max": 49.96047239524747,
+                 "stddev": 14.518747713268956,
+                 "sum": 35727.203700111946}
+             }
+        ss = SeriesSummary(d, None)
+        di = ss.to_dictionary()
+        self.assertEquals(di['series']['key'], 'stuff')
+        self.assertEquals(di['summary']['count'], 1440)
+
+    def test_series_summary_to_json(self):
+        d = {"series":
+                {"id": "foo",
+                 "key": "stuff",
+                 "name": "",
+                 "tags": [],
+                 "attributes": {}},
+             "tz": "UTC",
+             "end": "2012-01-02T00:00:00.000Z",
+             "start": "2012-01-01T00:00:00.000Z",
+             "summary":
+                {"count": 1440,
+                 "mean": 24.81055812507774,
+                 "min": 0.05106735242182414,
+                 "max": 49.96047239524747,
+                 "stddev": 14.518747713268956,
+                 "sum": 35727.203700111946}
+             }
+        ss = SeriesSummary(d, None)
+        j = ss.to_json()
+        dj = json.loads(j)
+        d['start'] = '2012-01-01T00:00:00+00:00'
+        d['end'] = '2012-01-02T00:00:00+00:00'
+        del d['series']['id']
+        self.maxDiff = None
+        self.assertDictEqual(dj, d)

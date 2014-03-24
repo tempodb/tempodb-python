@@ -59,7 +59,7 @@ class TestClient(unittest.TestCase):
         }
         url_args = make_url_args(params)
         url = '?'.join([p.SERIES_ENDPOINT, url_args])
-        self.client.delete_series(key='bar', tags=['baz'],
+        self.client.delete_series(keys='bar', tags=['baz'],
                                   attrs={'abc': 'def'})
         self.client.session.pool.delete.assert_called_once_with(
             BASE_URL + url,
@@ -90,7 +90,7 @@ class TestClient(unittest.TestCase):
             "attributes": {}
         }])
         self.client.session.pool.get.return_value = resp_data
-        r = self.client.list_series(key='foo')
+        r = self.client.list_series(keys='foo')
         self.assertEquals(r.response.status, 200)
         self.assertEquals(len([a for a in r]), 1)
         self.client.session.pool.get.assert_called_once()
