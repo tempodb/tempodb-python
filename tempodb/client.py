@@ -9,8 +9,8 @@ from temporal.validate import check_time_param
 
 
 def make_series_url(key):
-    """For internal use. Given a series key, generate a valid URL to the series endpoint for
-    that key.
+    """For internal use. Given a series key, generate a valid URL to the series
+    endpoint for that key.
 
     :param string key: the series key
     :rtype: string"""
@@ -21,8 +21,8 @@ def make_series_url(key):
 
 
 class with_response_type(object):
-    """For internal use. Decorator for ensuring the Response object returned by the
-    :class:`Client` object has a data attribute that corresponds to the
+    """For internal use. Decorator for ensuring the Response object returned by
+    the :class:`Client` object has a data attribute that corresponds to the
     object type expected from the TempoDB API.  This class should not be
     used by user code.
 
@@ -53,8 +53,8 @@ class with_response_type(object):
 
 
 class with_cursor(object):
-    """For internal use. Decorator class for automatically transforming a response into a
-    Cursor of the required type.
+    """For internal use. Decorator class for automatically transforming a
+    response into a Cursor of the required type.
 
     :param class cursor_type: the cursor class to use
     :param class data_type: the data type that cursor should generate"""
@@ -286,6 +286,50 @@ class Client(object):
             'interpolation.period': interpolation_period,
             'tz': tz,
             'limit': limit
+        }
+        url_args = endpoint.make_url_args(params)
+        url = '?'.join([url, url_args])
+        resp = self.session.get(url)
+        return resp
+
+    @with_cursor(protocol.DataPointCursor, protocol.MultiPoint)
+    def read_multi_rollups(self, key, start, end, folds, period,
+                           tz=None, interpolationf=None,
+                           interpolation_period=None, limit=5000):
+        """Read data from a single series with multiple rollups applied.
+        The fold parameter should be a list of rollup names
+
+        ;param string key: the series key to read from
+        :param list folds: the rollup functions to use
+        :param keys: (optional) filter by one or more series keys
+        :param start: the start time for the data points
+        :type start: string or Datetime
+        :param end: the end time for the data points
+        :type end: string or Datetime
+        :param string period: (optional) downsampling rate for the data
+        :param string tz: (optional) the timezone to place the data into
+        :param string interpolationf: (optional) an interpolation function
+                                      to run over the series
+        :param string interpolation_period: (optional) the period to
+                                            interpolate data into
+        :rtype: :class:`tempodb.protocol.cursor.DataPointCursor` with an
+                iterator over :class:`tempodb.protocol.objects.MultiPoint`
+                objects"""
+
+        url = make_series_url(key)
+        url = urlparse.urljoin(url + '/', 'data/rollups/segment')
+
+        vstart = check_time_param(start)
+        vend = check_time_param(end)
+        params = {
+            'start': vstart,
+            'end': vend,
+            'limit': limit,
+            'rollup.fold': folds,
+            'rollup.period': period,
+            'interpolation.function': interpolationf,
+            'interpolation.period': interpolation_period,
+            'tz': tz
         }
         url_args = endpoint.make_url_args(params)
         url = '?'.join([url, url_args])
