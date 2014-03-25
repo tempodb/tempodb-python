@@ -232,7 +232,7 @@ class Client(object):
 
     #DATA READING METHODS
     @with_cursor(protocol.DataPointCursor, protocol.DataPoint)
-    def read_data(self, key, start=None, end=None, fold=None,
+    def read_data(self, key, start=None, end=None, rollup=None,
                   period=None, interpolationf=None, interpolation_period=None,
                   tz=None, limit=1000):
         """Read data from a series given its ID or key.  Start and end times
@@ -240,10 +240,22 @@ class Client(object):
         2012-01-08T00:21:54.000+0000) or Python Datetime objects, which will
         be converted for you.
 
-        The fold parameter is optional and can include string values such
-        as "sum" and "avg".  This will apply a folding function to your
-        rollup of data.  The optional period parameter will downsample your
-        data according to the given resolution ("1min", "2day", etc).
+        The rollup parameter is optional and can include string values such
+        as "sum" and "avg".  Below is a list of valid rollup functions:
+
+            * count
+            * sum
+            * mult
+            * min
+            * max
+            * stddev
+            * ss
+            * range
+            * percentile,N (where N is what percentile to calculate)
+
+        This will apply a rollup function to your raw dataset.  The
+        optional period parameter will downsample your data according to the
+        given resolution ("1min", "2day", etc).
 
         The optional interpolation parameters can be used to resample your
         data to a regular interval interpolation_period according to an
@@ -261,7 +273,7 @@ class Client(object):
         :type start: string or Datetime
         :param end: the end time for the data points
         :type end: string or Datetime
-        :param string fold: (optional) the name of a rollup function to use
+        :param string rollup: (optional) the name of a rollup function to use
         :param string period: (optional) downsampling rate for the data
         :param string interpolationf: (optional) an interpolation function
                                       to run over the series
@@ -280,7 +292,7 @@ class Client(object):
         params = {
             'start': vstart,
             'end': vend,
-            'rollup.fold': fold,
+            'rollup.fold': rollup,
             'rollup.period': period,
             'interpolation.function': interpolationf,
             'interpolation.period': interpolation_period,
@@ -294,6 +306,18 @@ class Client(object):
 
     @with_response_type('SeriesSummary')
     def get_summary(self, key, start, end, tz=None):
+        """Get a summary for the series from *start* to *end*.  The summary is
+        a map containing keys *count*, *min*, *max*, *mean*, *sum*, and
+        *stddev*.
+
+        :param string key: the series key to use
+        :param start: the start time for the data points
+        :type start: string or Datetime
+        :param end: the end time for the data points
+        :type end: string or Datetime
+        :rtype: :class:`tempodb.response.Response` with a
+                :class:`tempodb.protocol.objects.SeriesSummary` data payload"""
+
         url = make_series_url(key)
         url = urlparse.urljoin(url + '/', 'summary')
 
@@ -310,14 +334,14 @@ class Client(object):
         return resp
 
     @with_cursor(protocol.DataPointCursor, protocol.MultiPoint)
-    def read_multi_rollups(self, key, start, end, folds, period,
+    def read_multi_rollups(self, key, start, end, rollups, period,
                            tz=None, interpolationf=None,
                            interpolation_period=None, limit=5000):
         """Read data from a single series with multiple rollups applied.
-        The fold parameter should be a list of rollup names
+        The fold parameter should be a list of rollup names.
 
         ;param string key: the series key to read from
-        :param list folds: the rollup functions to use
+        :param list rollups: the rollup functions to use
         :param keys: (optional) filter by one or more series keys
         :param start: the start time for the data points
         :type start: string or Datetime
@@ -342,7 +366,7 @@ class Client(object):
             'start': vstart,
             'end': vend,
             'limit': limit,
-            'rollup.fold': folds,
+            'rollup.fold': rollups,
             'rollup.period': period,
             'interpolation.function': interpolationf,
             'interpolation.period': interpolation_period,
@@ -404,7 +428,7 @@ class Client(object):
 
     @with_cursor(protocol.DataPointCursor, protocol.DataPoint)
     def aggregate_data(self, aggregation, keys=[], tags=[], attrs={},
-                       start=None, end=None, fold=None, period=None,
+                       start=None, end=None, rollup=None, period=None,
                        interpolationf=None, interpolation_period=None,
                        tz=None, limit=1000):
         """Read data from multiple series according to a filter and apply a
@@ -415,7 +439,7 @@ class Client(object):
         criteria are applied, and the :meth:`read_data` method for how to
         work with the start, end, and tz parameters.
 
-        Valid aggregation functions are the same as valid fold functions.
+        Valid aggregation functions are the same as valid rollup functions.
 
         :param string aggregation: the aggregation to perform
         :param keys: (optional) filter by one or more series keys
@@ -428,7 +452,7 @@ class Client(object):
         :type start: string or Datetime
         :param end: the end time for the data points
         :type end: string or Datetime
-        :param string fold: (optional) the name of a rollup function to use
+        :param string rollup: (optional) the name of a rollup function to use
         :param string period: (optional) downsampling rate for the data
         :param string interpolationf: (optional) an interpolation function
                                       to run over the series
@@ -450,7 +474,7 @@ class Client(object):
             'tag': tags,
             'attr': attrs,
             'aggregation.fold': aggregation,
-            'rollup.fold': fold,
+            'rollup.fold': rollup,
             'rollup.period': period,
             'interpolation.function': interpolationf,
             'interpolation.period': interpolation_period,
@@ -463,7 +487,7 @@ class Client(object):
         return resp
 
     @with_cursor(protocol.DataPointCursor, protocol.MultiPoint)
-    def read_multi(self, start, end, keys=None, fold=None, period=None,
+    def read_multi(self, start, end, keys=None, rollup=None, period=None,
                    tz=None, tags=None, attrs=None, interpolationf=None,
                    interpolation_period=None, limit=5000):
         """Read data from multiple series given filter criteria.  See the
@@ -475,12 +499,13 @@ class Client(object):
         :type keys: list or string
         :param tags: filter by one or more tags
         :type tags: list or string
-        :param dict attrs: (optional) filter by one or more key-value attributes
+        :param dict attrs: (optional) filter by one or more key-value
+                            attributes
         :param start: the start time for the data points
         :type start: string or Datetime
         :param end: the end time for the data points
         :type end: string or Datetime
-        :param string fold: (optional) the name of a rollup function to use
+        :param string rollup: (optional) the name of a rollup function to use
         :param string period: (optional) downsampling rate for the data
         :param string tz: (optional) the timezone to place the data into
         :param string interpolationf: (optional) an interpolation function
@@ -502,7 +527,7 @@ class Client(object):
             'start': vstart,
             'end': vend,
             'limit': limit,
-            'rollup.fold': fold,
+            'rollup.fold': rollup,
             'rollup.period': period,
             'interpolation.function': interpolationf,
             'interpolation.period': interpolation_period,
