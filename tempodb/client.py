@@ -102,6 +102,7 @@ class Client(object):
         * :meth:`find_data`
         * :meth:`aggregate_data`
         * :meth:`read_multi`
+        * :meth:`get_summary`
 
     WRITING DATA
 
@@ -427,10 +428,9 @@ class Client(object):
         return resp
 
     @with_cursor(protocol.DataPointCursor, protocol.DataPoint)
-    def aggregate_data(self, aggregation, keys=[], tags=[], attrs={},
-                       start=None, end=None, rollup=None, period=None,
-                       interpolationf=None, interpolation_period=None,
-                       tz=None, limit=1000):
+    def aggregate_data(self, start, end, aggregation, keys=[], tags=[],
+                       attrs={}, rollup=None, period=None, interpolationf=None,
+                       interpolation_period=None, tz=None, limit=1000):
         """Read data from multiple series according to a filter and apply a
         function across all the returned series to put the datapoints together
         into one aggregrate series.
