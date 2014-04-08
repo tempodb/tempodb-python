@@ -31,8 +31,8 @@ class DataSetTest(TestCase):
                 'tags': ['tag1', 'tag2'],
                 'attributes': {'key1': 'value1'},
             },
-            'start': '2012-03-27T00:00:00.000',
-            'end': '2012-03-28T00:00:00.000',
+            'start': '2012-03-27T00:00:00.000Z',
+            'end': '2012-03-28T00:00:00.000Z',
             'data': [],
             'summary': {'min': 45.5}
         }

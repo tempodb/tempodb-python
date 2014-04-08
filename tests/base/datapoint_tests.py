@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 import datetime
-from unittest2 import TestCase
+from unittest import TestCase
 
 from tempodb import DataPoint
 
@@ -27,7 +27,7 @@ class DataPointTest(TestCase):
 
     def test_from_json(self):
         json = {
-            't': '2012-03-27T01:02:03.000004',
+            't': '2012-03-27T01:02:03.000004Z',
             'v': 12.34
         }
         dp = DataPoint.from_json(json)
