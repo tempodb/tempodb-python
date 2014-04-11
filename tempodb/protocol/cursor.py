@@ -55,7 +55,25 @@ class Cursor(object):
 
 
 class DataPointCursor(Cursor):
-    """An iterable cursor over a collection of DataPoint objects."""
+    """An iterable cursor over a collection of DataPoint objects.  The
+    timezone, rollup data, and start and end times are available as the
+    following attributes on the cursor directly:
+
+        * tz
+        * rollup
+        * start
+        * end
+
+    The data attribute holds the actual data from the request.
+
+    Additionally, the raw response object is available as the response
+    attribute of the cursor.
+
+    :param list data: a list of data points from the API
+    :param class type: the type of object construct from the data
+    :param response: the raw response object
+    :type response: :class:`tempodb.response.Response`
+    :param string tz: the timezone the data is returned in"""
 
     def __init__(self, data, t, response, tz=None):
         self.response = response
