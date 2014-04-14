@@ -143,8 +143,8 @@ class TestClient(unittest.TestCase):
         self.client.session.pool.get.return_value = resp_data
         start = datetime.datetime.now()
         end = datetime.datetime.now()
-        r = self.client.aggregate_data('sum', keys='foo', tags=['bar', 'baz'],
-                                       start=start, end=end)
+        r = self.client.aggregate_data(start, end, 'sum', keys='foo',
+                                       tags=['bar', 'baz'])
         self.assertEquals(r.response.status, 200)
         self.assertEquals(len([a for a in r]), 1)
         self.client.session.pool.get.assert_called_once()
