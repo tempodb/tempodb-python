@@ -161,7 +161,7 @@ class SingleValue(JSONSerializable):
         super(SingleValue, self).__init__(json_text, response)
         self.series = Series(self.series, response)
         if self.data is not None:
-            self.data = DataPoint(self.data, response)
+            self.data = DataPoint(self.data, response, self.data.get('tz'))
 
     def to_dictionary(self):
         """Serialize an object into dictionary form.  Useful if you have to
