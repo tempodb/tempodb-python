@@ -316,6 +316,7 @@ class Client(object):
         :type start: string or Datetime
         :param end: the end time for the data points
         :type end: string or Datetime
+        :param string tz: (optional) the timezone to place the data into
         :rtype: :class:`tempodb.response.Response` with a
                 :class:`tempodb.protocol.objects.SeriesSummary` data payload"""
 
