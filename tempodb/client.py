@@ -672,9 +672,9 @@ class Client(object):
         :param tags: filter by one or more tags
         :type tags: list or string
         :param dict attrs: filter by one or more key-value attributes
-        :rtype: :class:`tempodb.response.Response` with a list of
-                :class:`tempodb.protocol.objects.SingleValue` objects as the
-                data payload"""
+        :rtype: :class:`tempodb.protocol.cursor.SingleValueCursor` with an
+                iterator over :class:`tempodb.protocol.objects.SingleValue`
+                objects"""
 
         url = 'single/'
         if ts is not None:
