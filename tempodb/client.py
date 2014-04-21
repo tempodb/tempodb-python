@@ -102,6 +102,7 @@ class Client(object):
         * :meth:`find_data`
         * :meth:`aggregate_data`
         * :meth:`read_multi`
+        * :meth:`read_multi_rollups`
         * :meth:`get_summary`
 
     WRITING DATA
@@ -340,11 +341,11 @@ class Client(object):
                            tz=None, interpolationf=None,
                            interpolation_period=None, limit=5000):
         """Read data from a single series with multiple rollups applied.
-        The fold parameter should be a list of rollup names.
+        The rollups parameter should be a list of rollup names.
 
-        ;param string key: the series key to read from
+        :param string key: the series key to read from
         :param list rollups: the rollup functions to use
-        :param keys: (optional) filter by one or more series keys
+        :param list keys: (optional) filter by one or more series keys
         :param start: the start time for the data points
         :type start: string or Datetime
         :param end: the end time for the data points
