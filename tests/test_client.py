@@ -279,9 +279,8 @@ class TestClient(unittest.TestCase):
         }])
         self.client.session.pool.get.return_value = resp_data
         r = self.client.multi_series_single_value('foo')
-        self.assertEquals(r.status, 200)
-        self.assertEquals(r.data[0].__class__.__name__, 'SingleValue')
-        self.assertEquals(len(r.data), 1)
+        self.assertEquals(r.response.status, 200)
+        self.assertEquals(len([s for s in r]), 1)
         self.client.session.pool.get.assert_called_once()
 
     def test_multi_series_single_value_with_ts(self):
@@ -302,9 +301,8 @@ class TestClient(unittest.TestCase):
         self.client.session.pool.get.return_value = resp_data
         r = self.client.multi_series_single_value('foo',
                                                   ts=datetime.datetime.now())
-        self.assertEquals(r.status, 200)
-        self.assertEquals(r.data[0].__class__.__name__, 'SingleValue')
-        self.assertEquals(len(r.data), 1)
+        self.assertEquals(r.response.status, 200)
+        self.assertEquals(len([s for s in r]), 1)
         self.client.session.pool.get.assert_called_once()
 
     def test_delete(self):

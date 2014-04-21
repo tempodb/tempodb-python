@@ -1,6 +1,6 @@
 import json
 from tempodb.temporal.validate import convert_iso_stamp, check_time_param
-from cursor import DataPointCursor, SeriesCursor
+from cursor import DataPointCursor, SeriesCursor, SingleValueCursor
 
 
 class JSONSerializable(object):

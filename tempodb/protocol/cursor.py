@@ -118,3 +118,8 @@ class SeriesCursor(Cursor):
         j = json.loads(n.text)
         self.data = make_generator(
             [self.type(d, self.response) for d in j])
+
+
+class SingleValueCursor(Cursor):
+    """An iterable cursor over a collection of SingleValue objects"""
+    pass

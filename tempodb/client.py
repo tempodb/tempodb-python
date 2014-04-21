@@ -71,7 +71,8 @@ class with_cursor(object):
             resp_obj = Response(resp, session)
             if resp_obj.status == 200:
                 data = json.loads(resp_obj.body)
-                if self.cursor_type is protocol.SeriesCursor:
+                if self.cursor_type in [protocol.SeriesCursor,
+                                        protocol.SingleValueCursor]:
                     return self.cursor_type(data, self.data_type, resp_obj)
                 else:
                     return self.cursor_type(data, self.data_type, resp_obj,
@@ -651,7 +652,7 @@ class Client(object):
         resp = self.session.get(url)
         return resp
 
-    @with_response_type(['SingleValue'])
+    @with_cursor(protocol.SingleValueCursor, protocol.SingleValue)
     def multi_series_single_value(self, keys=None, ts=None, direction=None,
                                   attrs={}, tags=[]):
         """Return a single value for multiple series.  You can supply a
