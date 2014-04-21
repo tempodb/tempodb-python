@@ -77,8 +77,7 @@ class with_cursor(object):
                 else:
                     return self.cursor_type(data, self.data_type, resp_obj,
                                             kwargs.get('tz'))
-            raise ValueError("Request returned code %s: %s" % (resp_obj.status,
-                                                               resp_obj.body))
+            raise ResponseException(resp_obj)
         return wrapper
 
 
