@@ -249,7 +249,7 @@ class TestProtocolObjects(unittest.TestCase):
         del d['series']['id']
         d['data']['t'] = '2013-12-31T23:00:00+00:00'
         d1 = json.loads(json.dumps(d))
-        self.assertDictEqual(dj, d1)
+        self.assertEqual(dj, d1)
 
     def test_series_summary(self):
         d = {"series":
@@ -321,4 +321,4 @@ class TestProtocolObjects(unittest.TestCase):
         d['end'] = '2012-01-02T00:00:00+00:00'
         del d['series']['id']
         self.maxDiff = None
-        self.assertDictEqual(dj, d)
+        self.assertEqual(dj, d)
