@@ -51,7 +51,7 @@ class HTTPEndpoint(object):
 
         self.database_id = database_id
         self.headers = {
-            'User-Agent': 'tempodb-python/%s' % 1.0.0,
+            'User-Agent': 'tempodb-python/%s' % "1.0.0",
             'Accept-Encoding': 'gzip'
         }
         self.auth = HTTPBasicAuth(key, secret)
