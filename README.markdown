@@ -4,17 +4,7 @@
 
 The TempoDB Python API Client makes calls to the [TempoDB API](http://tempo-db.com/api/).  The module is available on PyPi as [tempodb](http://pypi.python.org/pypi/tempodb/).
 
-Install tempodb from PyPI
-
-``
-pip install tempodb
-``
-
-Install tempodb from [source](https://github.com/tempodb/tempodb-python/blob/master/)
-
-``
-git clone git@github.com:tempodb/tempodb-python.git
-``
+For now, v1.0 of the Python client must be installed directly from source (https://github.com/tempodb/tempodb-python/tree/v1.0).  Use the v1.0 branch when building.
 
 ``
 cd tempodb-python
