@@ -27,7 +27,7 @@ setup(
     version="1.0.0",
     author="TempoDB Inc",
     author_email="dev@tempo-db.com",
-    url="http://github.com/getsentry/tempodb-python/",
+    url="http://github.com/tempodb/tempodb-python/",
     description="A client for the TempoDB API",
     packages=["tempodb", "tempodb.temporal", "tempodb.protocol"],
     long_description="A client for the TempoDB API.",
