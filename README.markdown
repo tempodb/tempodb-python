@@ -43,7 +43,7 @@ make html
 ``
 
 ``
-cd build
+cd build/html
 ``
 
 ``
