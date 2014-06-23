@@ -56,7 +56,7 @@ class TestEndpoint(unittest.TestCase):
     def test_endpoint_constructor(self):
         self.assertEquals(self.end.base_url, 'http://www.nothing.com/')
         self.assertEquals(self.end.headers['User-Agent'],
-                          'tempodb-python/%s' % '1.0.0')
+                          'tempodb-python/%s' % '1.0.1')
         self.assertEquals(self.end.headers['Accept-Encoding'], 'gzip')
         self.assertTrue(hasattr(self.end, 'auth'))
 
@@ -65,7 +65,7 @@ class TestEndpoint(unittest.TestCase):
                                   'http://www.nothing.com/')
         self.assertEquals(self.end.base_url, 'http://www.nothing.com/')
         self.assertEquals(self.end.headers['User-Agent'],
-                          'tempodb-python/%s' % '1.0.0')
+                          'tempodb-python/%s' % '1.0.1')
         self.assertEquals(self.end.headers['Accept-Encoding'], 'gzip')
         self.assertTrue(hasattr(self.end, 'auth'))
 
