@@ -7,14 +7,11 @@ TempoDB Python API documentation
 ================================
 
 The tempodb-python library allows users of the Python language to connect to 
-TempoDB's REST-based API to read and write data to their databases.  An 
-introduction with examples can be found in the "examples and snippets" document 
-below.  The other pages document the functions and classes in the API itself.
+TempoDB's REST-based API to read and write data to their databases. 
 
 Contents:
 
 .. toctree::
-   examples
    client
    endpoint
    response
